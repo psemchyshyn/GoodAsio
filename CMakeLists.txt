@@ -8,7 +8,12 @@ link_libraries(ws2_32 wsock32)
 
 
 #add_executable(echo-server main.cpp)
-add_executable(server server.cpp)
-target_link_libraries(server ${Boost_LIBRARIES})
+#add_executable(server server.cpp)
+#target_link_libraries(server ${Boost_LIBRARIES})
 add_executable(client client.cpp)
 target_link_libraries(client ${Boost_LIBRARIES})
+
+#add_executable(temp temp.cpp async_copy.cpp)
+#target_link_libraries(temp ${Boost_LIBRARIES})
+add_executable(temp1 async_copy.cpp)
+target_link_libraries(temp1 ws2_32 ${Boost_LIBRARIES})
