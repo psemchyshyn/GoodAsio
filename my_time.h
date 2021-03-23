@@ -1,7 +1,3 @@
-//
-// Created by drax on 21.03.21.
-//
-
 #ifndef ECHO_SERVER_MY_TIME_H
 #define ECHO_SERVER_MY_TIME_H
 

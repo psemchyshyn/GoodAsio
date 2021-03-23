@@ -1,7 +1,3 @@
-//
-// Created by msemc on 22.03.2021.
-//
-
 #include "TCPServer.h"
 #include <boost/bind.hpp>
 

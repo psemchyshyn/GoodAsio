@@ -1,7 +1,3 @@
-//
-// Created by msemc on 22.03.2021.
-//
-
 #ifndef ECHO_SERVER_TCPSERVER_H
 #define ECHO_SERVER_TCPSERVER_H
 #include <boost/asio.hpp>
