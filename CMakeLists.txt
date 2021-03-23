@@ -4,16 +4,21 @@ project(echo_server)
 set(CMAKE_CXX_STANDARD 17)
 find_package(Boost COMPONENTS system filesystem REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
-link_libraries(ws2_32 wsock32)
+find_package(Threads REQUIRED)
+if (WIN32)
+    link_libraries(ws2_32 wsock32)
+endif (WIN32)
+
+if (UNIX AND NOT APPLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+endif ()
 
 
-#add_executable(echo-server main.cpp)
-#add_executable(server server.cpp)
-#target_link_libraries(server ${Boost_LIBRARIES})
-add_executable(client client.cpp)
+add_executable(async_server my_time.h TCPServer.h TCPServer.cpp TCPConnection.cpp TCPConnection.h main.cpp)
+add_executable(sync_server sync_server.cpp my_time.h)
+add_executable(client client.cpp my_time.h)
+
+# Linking
+target_link_libraries(sync_server ${Boost_LIBRARIES})
+target_link_libraries(async_server ${Boost_LIBRARIES} Threads::Threads)
 target_link_libraries(client ${Boost_LIBRARIES})
-
-#add_executable(temp temp.cpp async_copy.cpp)
-#target_link_libraries(temp ${Boost_LIBRARIES})
-add_executable(temp1 async_copy.cpp)
-target_link_libraries(temp1 ws2_32 ${Boost_LIBRARIES})
