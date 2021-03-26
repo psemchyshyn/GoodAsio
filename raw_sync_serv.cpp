@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <iostream>
 #include "my_time.h"
 
 #define BUFFER_SIZE 1024
@@ -38,6 +39,7 @@ int main (int argc, char *argv[]) {
 
 
     auto start = get_current_time();
+    int alive_connections;
     while (1) {
         socklen_t client_len = sizeof(client);
         client_fd = accept(server_fd, (struct sockaddr *) &client, &client_len);
@@ -53,6 +55,15 @@ int main (int argc, char *argv[]) {
             err = send(client_fd, buf, read, 0);
             if (err < 0) on_error("Client write failed\n");
         }
+
+        alive_connections++;
+        if (to_us(get_current_time() - start) > 1000000) {
+            start = get_current_time();
+//            v_conn_per_sec.push_back(alive_connections);
+            std::cout << alive_connections << std::endl;
+            alive_connections = 0;
+        }
+
     }
 
     return 0;
