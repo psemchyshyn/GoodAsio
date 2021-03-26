@@ -1,7 +1,7 @@
 #include "TCPConnection.h"
 #include "TCPServer.h"
-
-#include "boost/bind.hpp"
+#include "my_time.h"
+#include "boost/bind/bind.hpp"
 #include <iostream>
 
 
@@ -20,7 +20,7 @@ void TCPConnection::start() {
     buf.resize(bytes);
 //        std::cout << bytes << "\n";
     boost::asio::async_read(socket_, boost::asio::buffer(buf.data(), buf.size()), boost::bind(
-            &TCPConnection::handle_read, shared_from_this()
+            &TCPConnection::handle_read, this
     ));
 
 //        auto total = get_current_time() - start;
@@ -28,16 +28,13 @@ void TCPConnection::start() {
 }
 
 void TCPConnection::handle_write(const boost::system::error_code&, int bytes_sent) {
-    std::cout << "Sent!\n";
-
+    server.connections_alive++;
+    count();
 }
 
 void TCPConnection::handle_read() {
-    for (auto ch : buf) {
-        std::cout << ch;
-    }
     boost::asio::async_write(socket_, boost::asio::buffer(buf.data(), buf.size()),
-                             boost::bind(&TCPConnection::handle_write, shared_from_this(),
+                             boost::bind(&TCPConnection::handle_write, this,
                                          boost::asio::placeholders::error,
                                          boost::asio::placeholders::bytes_transferred));
 }
@@ -49,3 +46,12 @@ tcp::socket& TCPConnection::get_socket() {
 void TCPConnection::disconnect() {
     server.connections_alive--;
 }
+
+void TCPConnection::count() {
+    if (to_us(get_current_time() - server.start) > 1000000) {
+        server.start = get_current_time();
+        server.v_conn_per_sec.push_back(server.connections_alive);
+        std::cout << server.connections_alive << std::endl;
+        server.connections_alive = 0;
+    }
+};

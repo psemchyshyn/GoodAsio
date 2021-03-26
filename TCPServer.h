@@ -2,6 +2,7 @@
 #define ECHO_SERVER_TCPSERVER_H
 #include <boost/asio.hpp>
 #include "TCPConnection.h"
+#include "my_time.h"
 
 using boost::asio::ip::tcp;
 
@@ -9,6 +10,9 @@ class TCPServer {
     boost::asio::io_context& io_context_;
     tcp::acceptor acceptor_;
     int connections_alive;
+    std::vector<int> v_conn_per_sec{};
+    std::string response{"Client's request"};
+    std::chrono::high_resolution_clock::time_point start;
 
     friend class TCPConnection;
 

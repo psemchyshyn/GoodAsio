@@ -7,7 +7,7 @@
 using boost::asio::ip::tcp;
 class TCPServer;
 
-class TCPConnection: public std::enable_shared_from_this<TCPConnection> {
+class TCPConnection {
     typedef std::shared_ptr<TCPConnection> pointer;
     tcp::socket socket_;
     std::vector<char> buf;
@@ -22,6 +22,7 @@ public:
     void handle_read();
     void handle_write(const boost::system::error_code&, int bytes_sent);
     void disconnect();
+    void count();
     tcp::socket& get_socket();
 };
 
