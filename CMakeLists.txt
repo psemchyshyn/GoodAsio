@@ -14,9 +14,10 @@ if (UNIX AND NOT APPLE)
 endif ()
 
 
-add_executable(async_server my_time.h TCPServer.h TCPServer.cpp TCPConnection.cpp TCPConnection.h main.cpp)
+add_executable(async_server my_time.h TCPServer.h TCPServer.cpp TCPConnection.cpp TCPConnection.h main.cpp row_sync_server.cpp)
 add_executable(sync_server sync_server.cpp my_time.h)
 add_executable(client client.cpp my_time.h)
+add_executable(row_sync_server row_sync_server.cpp)
 
 # Linking
 target_link_libraries(sync_server ${Boost_LIBRARIES})

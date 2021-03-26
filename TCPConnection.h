@@ -11,7 +11,7 @@
 using boost::asio::ip::tcp;
 class TCPServer;
 
-class TCPConnection: public std::enable_shared_from_this<TCPConnection> {
+class TCPConnection {
     typedef std::shared_ptr<TCPConnection> pointer;
     tcp::socket socket_;
     std::vector<char> buf;
@@ -28,6 +28,4 @@ public:
     void disconnect();
     tcp::socket& get_socket();
 };
-
-
 #endif //ECHO_SERVER_TCPCONNECTION_H
