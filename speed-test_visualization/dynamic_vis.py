@@ -27,9 +27,15 @@ app.layout = html.Div(
 @app.callback(Output('live-graph', 'figure'),
               [Input('graph-update', 'n_intervals')])
 def update_graph_scatter(input_data):
-    X.append(X[-1]+1)
-    Y.append(Y[-1]+Y[-1]*random.uniform(-0.1,0.1))
-
+    with open("../result.txt", "r") as f:
+        line = f.read(4).strip()
+        try:
+            Y.append(int(line))
+            X.append(X[-1]+1)
+        except Exception:
+            print(line)
+            print("-"*30)
+        
     data = plotly.graph_objs.Scatter(
             x=list(X),
             y=list(Y),

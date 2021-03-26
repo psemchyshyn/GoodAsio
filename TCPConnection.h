@@ -1,7 +1,3 @@
-//
-// Created by msemc on 22.03.2021.
-//
-
 #ifndef ECHO_SERVER_TCPCONNECTION_H
 #define ECHO_SERVER_TCPCONNECTION_H
 
@@ -26,6 +22,7 @@ public:
     void handle_read();
     void handle_write(const boost::system::error_code&, int bytes_sent);
     void disconnect();
+    void count();
     tcp::socket& get_socket();
 };
 #endif //ECHO_SERVER_TCPCONNECTION_H

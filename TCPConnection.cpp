@@ -1,10 +1,6 @@
-//
-// Created by msemc on 22.03.2021.
-//
-
 #include "TCPConnection.h"
 #include "TCPServer.h"
-
+#include "my_time.h"
 #include "boost/bind.hpp"
 #include <iostream>
 
@@ -32,13 +28,12 @@ void TCPConnection::start() {
 }
 
 void TCPConnection::handle_write(const boost::system::error_code&, int bytes_sent) {
-    std::cout << "Sent!\n";
+
+    server.connections_alive++;
+    count();
 }
 
 void TCPConnection::handle_read() {
-    for (auto ch : buf) {
-        std::cout << ch;
-    }
     boost::asio::async_write(socket_, boost::asio::buffer(buf.data(), buf.size()),
                              boost::bind(&TCPConnection::handle_write, this,
                                          boost::asio::placeholders::error,
@@ -52,3 +47,12 @@ tcp::socket& TCPConnection::get_socket() {
 void TCPConnection::disconnect() {
     server.connections_alive--;
 }
+
+void TCPConnection::count() {
+    if (to_us(get_current_time() - server.start) > 1000000) {
+        server.start = get_current_time();
+        server.v_conn_per_sec.push_back(server.connections_alive);
+        std::cout << server.connections_alive << std::endl;
+        server.connections_alive = 0;
+    }
+};

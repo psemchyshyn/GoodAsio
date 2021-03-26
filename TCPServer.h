@@ -1,19 +1,19 @@
-//
-// Created by msemc on 22.03.2021.
-//
-
 #ifndef ECHO_SERVER_TCPSERVER_H
 #define ECHO_SERVER_TCPSERVER_H
 #include <boost/asio.hpp>
 #include <atomic>
 #include "TCPConnection.h"
+#include "my_time.h"
 
 using boost::asio::ip::tcp;
 
 class TCPServer {
     boost::asio::io_context& io_context_;
     tcp::acceptor acceptor_;
-    std::atomic<int> connections_alive;
+    int connections_alive;
+    std::vector<int> v_conn_per_sec{};
+    std::string response{"Client's request"};
+    std::chrono::high_resolution_clock::time_point start;
 
     friend class TCPConnection;
 
