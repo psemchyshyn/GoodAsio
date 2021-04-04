@@ -53,7 +53,6 @@ int main(int argc, char*argv[]) {
         // measure time
         auto now = get_current_time() - start;
         if (to_us(now) > 1000000) {
-//            std::filesystem::resize_file(std::filesystem::path("../result.txt"), 0);
             f.close();
             f = std::ofstream{"../result.txt"};
             f << alive_connections << std::endl;

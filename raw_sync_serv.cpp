@@ -48,7 +48,6 @@ int main (int argc, char *argv[]) {
 
         while (1) {
             int read = recv(client_fd, buf, BUFFER_SIZE, 0);
-
             if (!read) break; // done reading
             if (read < 0) on_error("Client read failed\n");
 

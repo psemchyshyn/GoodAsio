@@ -14,6 +14,8 @@ class TCPServer {
     std::vector<int> v_conn_per_sec{};
     std::string response{"Client's request"};
     std::chrono::high_resolution_clock::time_point start;
+    int limit = 10;
+    int accepts = 0;
 
     friend class TCPConnection;
 

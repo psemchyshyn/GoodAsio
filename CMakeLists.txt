@@ -15,7 +15,7 @@ if (UNIX AND NOT APPLE)
 endif ()
 
 
-add_executable(async_server my_time.h TCPServer.h TCPServer.cpp TCPConnection.cpp TCPConnection.h main.cpp)
+add_executable(async_server my_time.h TCPServer.h TCPServer.cpp TCPConnection.cpp TCPConnection.h main.cpp EventLoop.cpp EventLoop.h select_server.cpp)
 add_executable(sync_server sync_server.cpp my_time.h)
 add_executable(client client.cpp my_time.h)
 add_executable(raw_sync_serv raw_sync_serv.cpp)
