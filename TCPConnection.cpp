@@ -1,7 +1,7 @@
 #include "TCPConnection.h"
 #include "TCPServer.h"
 #include "my_time.h"
-#include "boost/bind.hpp"
+#include "boost/bind/bind.hpp"
 #include <iostream>
 
 
@@ -15,12 +15,11 @@ TCPConnection::TCPConnection(boost::asio::io_context& io_context, TCPServer& ser
 
 void TCPConnection::start() {
 //        auto start = get_current_time();
-    socket_.wait(socket_.wait_read);
     int bytes = socket_.available();
     buf.resize(bytes);
 //        std::cout << bytes << "\n";
     boost::asio::async_read(socket_, boost::asio::buffer(buf.data(), buf.size()), boost::bind(
-            &TCPConnection::handle_read, this
+            &TCPConnection::handle_read, shared_from_this()
     ));
 
 //        auto total = get_current_time() - start;
@@ -35,7 +34,7 @@ void TCPConnection::handle_write(const boost::system::error_code&, int bytes_sen
 
 void TCPConnection::handle_read() {
     boost::asio::async_write(socket_, boost::asio::buffer(buf.data(), buf.size()),
-                             boost::bind(&TCPConnection::handle_write, this,
+                             boost::bind(&TCPConnection::handle_write, shared_from_this(),
                                          boost::asio::placeholders::error,
                                          boost::asio::placeholders::bytes_transferred));
 }

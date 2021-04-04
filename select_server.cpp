@@ -4,12 +4,14 @@
 #include <string.h>
 #include <netdb.h>
 #include <sys/types.h>
+#include <sys/epoll.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <iostream>
-
+#include <fstream>
 #include "my_time.h"
+
 
 #define BUFSIZE 1024
 
@@ -84,7 +86,7 @@ int main(int argc, char **argv) {
     /*
      * listen: make this socket ready to accept connection requests
      */
-    if (listen(parentfd, 5) < 0) /* allow 5 requests to queue up */
+    if (listen(parentfd, 10000) < 0) /* allow 5 requests to queue up */
         error("ERROR on listen");
 
 
@@ -93,16 +95,13 @@ int main(int argc, char **argv) {
     notdone = 1;
     connectcnt = 0;
 //    printf("server> ");
-    fflush(stdout);
 
     /*
-     * main loop: wait for connection request or stdin command.
-     *
      * If connection request, then echo input line
      * and close connection.
-     * If command, then process command.
      */
     auto start = get_current_time();
+    std::ofstream f{"../result.txt"};
     while (notdone) {
 
         /*
@@ -115,42 +114,27 @@ int main(int argc, char **argv) {
         if (select(parentfd+1, &readfds, 0, 0, 0) < 0) {
             error("ERROR in select");
         }
-
-        /* if the user has entered a command, process it */
-//        if (FD_ISSET(0, &readfds)) {
-//            fgets(buf, BUFSIZE, stdin);
-//            switch (buf[0]) {
-//                case 'c': /* print the connection cnt */
-//                    printf("Received %d connection requests so far.\n", connectcnt);
-//                    printf("server> ");
-//                    fflush(stdout);
-//                    break;
-//                case 'q': /* terminate the server */
-//                    notdone = 0;
-//                    break;
-//                default: /* bad input */
-//                    printf("ERROR: unknown command\n");
-//                    printf("server> ");
-//                    fflush(stdout);
-//            }
-//        }
+        std::cout << "SELECT DONE!\n";
 
         /* if a connection request has arrived, process it */
         if (FD_ISSET(parentfd, &readfds)) {
             /*
              * accept: wait for a connection request
              */
-            childfd = accept(parentfd,
-                             (struct sockaddr *) &clientaddr, &clientlen);
+            childfd = accept(parentfd,(struct sockaddr *) &clientaddr, &clientlen);
             if (childfd < 0)
                 error("ERROR on accept");
             connectcnt++;
+
+            std::cout << "ACCEPT DONE!\n";
 
             /*
              * read: read input string from the client
              */
             bzero(buf, BUFSIZE);
             n = read(childfd, buf, BUFSIZE);
+
+            std::cout << "READ` DONE!\n";
             if (n < 0)
                 error("ERROR reading from socket");
 
@@ -165,6 +149,9 @@ int main(int argc, char **argv) {
         }
 
         if (to_us(get_current_time() - start) > 1000000) {
+            f.close();
+            f = std::ofstream {"../result.txt"};
+            f << connectcnt << std::endl;
             start = get_current_time();
 //            v_conn_per_sec.push_back(alive_connections);
             std::cout << connectcnt << std::endl;

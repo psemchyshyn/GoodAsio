@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <iostream>
+#include <fstream>
 #include "my_time.h"
 
 #define BUFFER_SIZE 1024
@@ -32,14 +33,15 @@ int main (int argc, char *argv[]) {
     err = bind(server_fd, (struct sockaddr *) &server, sizeof(server));
     if (err < 0) on_error("Could not bind socket\n");
 
-    err = listen(server_fd, 128);
+    err = listen(server_fd, 5);
     if (err < 0) on_error("Could not listen on socket\n");
 
 //    printf("Server is listening on %d\n", port);
 
 
     auto start = get_current_time();
-    int alive_connections;
+    int alive_connections = 0;
+    std::ofstream f{"../result.txt"};
     while (1) {
         socklen_t client_len = sizeof(client);
         client_fd = accept(server_fd, (struct sockaddr *) &client, &client_len);
@@ -58,12 +60,14 @@ int main (int argc, char *argv[]) {
 
         alive_connections++;
         if (to_us(get_current_time() - start) > 1000000) {
+            f.close();
+            f = std::ofstream {"../result.txt"};
+            f << alive_connections << std::endl;
             start = get_current_time();
 //            v_conn_per_sec.push_back(alive_connections);
             std::cout << alive_connections << std::endl;
             alive_connections = 0;
         }
-
     }
 
     return 0;
