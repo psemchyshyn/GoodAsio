@@ -1,7 +1,7 @@
 #include "TCPConnection.h"
 #include "TCPServer.h"
 #include "my_time.h"
-#include "boost/bind.hpp"
+#include "boost/bind/bind.hpp"
 #include <iostream>
 
 
@@ -15,7 +15,6 @@ TCPConnection::TCPConnection(boost::asio::io_context& io_context, TCPServer& ser
 
 void TCPConnection::start() {
 //        auto start = get_current_time();
-    socket_.wait(socket_.wait_read);
     int bytes = socket_.available();
     buf.resize(bytes);
 //        std::cout << bytes << "\n";

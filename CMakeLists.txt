@@ -1,4 +1,3 @@
-
 cmake_minimum_required(VERSION 3.16)
 project(echo_server)
 
@@ -14,14 +13,14 @@ if (UNIX AND NOT APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 endif ()
 
-
-add_executable(async_server my_time.h TCPServer.h TCPServer.cpp TCPConnection.cpp TCPConnection.h main.cpp EventLoop.cpp EventLoop.h select_server.cpp)
+add_executable(sel Selector.cpp Selector.h)
+add_executable(select_server select_server.cpp)
+add_executable(async_server my_time.h TCPServer.h TCPServer.cpp TCPConnection.cpp TCPConnection.h main.cpp)
 add_executable(sync_server sync_server.cpp my_time.h)
 add_executable(client client.cpp my_time.h)
 add_executable(raw_sync_serv raw_sync_serv.cpp)
-
+add_executable(event_loop EventLoop.cpp EventLoop.h)
 # Linking
 target_link_libraries(sync_server ${Boost_LIBRARIES})
 target_link_libraries(async_server ${Boost_LIBRARIES} Threads::Threads)
 target_link_libraries(client ${Boost_LIBRARIES})
-

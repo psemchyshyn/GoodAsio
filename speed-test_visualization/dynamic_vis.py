@@ -40,13 +40,13 @@ def update_graph_scatter(input_data):
         except Exception:
             print(line)
             print("-"*30)
-        
+
     data = plotly.graph_objs.Scatter(
-            x=list(X),
-            y=list(Y),
-            name='Scatter',
-            mode= 'lines+markers'
-            )
+        x=list(X),
+        y=list(Y),
+        name='Scatter',
+        mode= 'lines+markers'
+    )
     fig = {'data': [data],'layout' : go.Layout(xaxis=dict(range=[min(X),max(X)]),
                                                yaxis=dict(range=[min(Y),max(Y)]),)}
     return fig, f"Current mean: {TOTAL_SUM / (X[-1] - 1)}"

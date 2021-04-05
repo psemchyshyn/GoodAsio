@@ -10,9 +10,6 @@ PORT = int(sys.argv[2])
 while True:
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect((IP_ADDRESS, PORT))
-    message = b"Client's request."
+    message = input("Send to server: ").encode()
     client.send(message)
-    client.close()
-
-
-
+    print(client.recv(1024))

@@ -1,20 +1,21 @@
-//
-// Created by msemc on 04.04.2021.
-//
-
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <netdb.h>
 #include <sys/types.h>
+#include <sys/epoll.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <iostream>
 #include <fstream>
-
 #include "my_time.h"
+#include <vector>
+#include <algorithm>
+#include <set>
+#include "Selector.h"
+
 
 #define BUFSIZE 1024
 
@@ -38,7 +39,6 @@ int main(int argc, char **argv) {
     int n; /* message byte size */
     int connectcnt; /* number of connection requests */
     int notdone;
-    fd_set readfds;
 
     /*
      * check command line arguments
@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
      */
     optval = 1;
     setsockopt(parentfd, SOL_SOCKET, SO_REUSEADDR,
-               (const void *)&optval , sizeof(int));
+               (const void *) &optval, sizeof(int));
 
     /*
      * build the server's Internet address
@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
     serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     /* this is the port we will listen on */
-    serveraddr.sin_port = htons((unsigned short)portno);
+    serveraddr.sin_port = htons((unsigned short) portno);
 
     /*
      * bind: associate the parent socket with a port
@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
     /*
      * listen: make this socket ready to accept connection requests
      */
-    if (listen(parentfd, 5) < 0) /* allow 5 requests to queue up */
+    if (listen(parentfd, 10000) < 0) /* allow 5 requests to queue up */
         error("ERROR on listen");
 
 
@@ -98,70 +98,65 @@ int main(int argc, char **argv) {
     notdone = 1;
     connectcnt = 0;
 //    printf("server> ");
-    fflush(stdout);
 
     /*
-     * main loop: wait for connection request or stdin command.
-     *
      * If connection request, then echo input line
      * and close connection.
-     * If command, then process command.
      */
     auto start = get_current_time();
+    std::set<int> descriptors_alive;
+    Selector selector{};
+    fd_set master_set;
+    fd_set writefds;
+    fd_set readfds;
+    fd_set accept_set;
+    int max_fd = parentfd;
+    FD_SET(parentfd, &master_set);
+    descriptors_alive.insert(parentfd);
     std::ofstream f{"../result.txt"};
     while (notdone) {
-
-        /*
-         * select: Has the user typed something to stdin or
-         * has a connection request arrived?
-         */
-        FD_ZERO(&readfds);          /* initialize the fd set */
-        FD_SET(parentfd, &readfds); /* add socket fd */
-//        FD_SET(0, &readfds);        /* add stdin fd (0) */
-        if (select(parentfd+1, &readfds, 0, 0, 0) < 0) {
+        FD_ZERO(&accept_set);          /* initialize the fd set */
+        FD_SET(parentfd, &accept_set); /* add socket fd */
+        struct timeval t{0, 1};
+        int threshold = parentfd < selector.get_max_descriptor() ? selector.get_max_descriptor(): parentfd;
+        if (select(threshold + 1, &accept_set, 0, 0, &t) < 0) { // trickky shit with timer
             error("ERROR in select");
         }
 
         /* if a connection request has arrived, process it */
-        if (FD_ISSET(parentfd, &readfds)) {
-            /*
-             * accept: wait for a connection request
-             */
-            childfd = accept(parentfd,(struct sockaddr *) &clientaddr, &clientlen);
-            if (childfd < 0)
-                error("ERROR on accept");
+        if (FD_ISSET(parentfd, &accept_set)) {
+            childfd = accept(parentfd, (struct sockaddr *) &clientaddr, &clientlen);
+            selector.register_read_fd(childfd);
             connectcnt++;
+        }
 
-            /*
-             * read: read input string from the client
-             */
+        for (auto i: selector.extract_readables(1)) {
             bzero(buf, BUFSIZE);
-            n = read(childfd, buf, BUFSIZE);
+            n = read(i, buf, BUFSIZE);
             if (n < 0)
                 error("ERROR reading from socket");
-            /*
- * write: echo the input string back to the client
- */
-            n = write(childfd, buf, strlen(buf));
+            selector.register_write_fd(i);
+        }
+
+        for (auto i: selector.extract_writeables(1)) {
+            n = write(i, buf, strlen(buf));
             if (n < 0)
                 error("ERROR writing to socket");
-
-            close(childfd);
+            close(i);
         }
 
         if (to_us(get_current_time() - start) > 1000000) {
             f.close();
-            f = std::ofstream {"../result.txt"};
+            f = std::ofstream{"../result.txt"};
             f << connectcnt << std::endl;
             start = get_current_time();
 //            v_conn_per_sec.push_back(alive_connections);
-            std::cout << connectcnt << std::endl;
+            std::cout << "Alive connections: " << connectcnt << std::endl;
             connectcnt = 0;
         }
     }
-
     /* clean up */
-//    printf("Terminating server.\n");
+    //    printf("Terminating server.\n");
     close(parentfd);
     exit(0);
 }
