@@ -7,6 +7,22 @@
 #include <string>
 #include "EventLoop.h"
 #include "Event.hpp"
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <netdb.h>
+#include <sys/types.h>
+#include <sys/epoll.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <iostream>
+#include <fstream>
+#include "my_time.h"
+#include <vector>
+#include <algorithm>
+#include <set>
 
 class ServerSocket;
 
@@ -18,23 +34,115 @@ public:
     int get_fd() {
         return fd_;
     }
+    virtual ~Socket() {
+        close(fd_);
+    }
+
+    virtual void sread() =0;
+    virtual void swrite() =0;
 };
 
 class SessionSocket: public Socket {
 
     friend ServerSocket;
-    std::string buf_{};
-    explicit SessionSocket(int fd, std::string buf = ""): Socket(fd), buf_{buf} {};
+    std::string buf_;
+    explicit SessionSocket(int fd, size_t buf_size = 20): Socket(fd), buf_(buf_size, ' ') {};
 
 public:
-    template<typename Callback> void async_read(EventLoop e_loop, Callback callback) {
+    template<typename Callback> void async_read(EventLoop& e_loop, Callback callback) {
         e_loop.addEvent(new ReadEvent(this, callback));
     }
 
-    template<typename Callback> void async_write(EventLoop e_loop, Callback callback) {
+    template<typename Callback> void async_write(EventLoop& e_loop, Callback callback) {
         e_loop.addEvent(new WriteEvent(this, callback));
     }
+
+    void sread() {
+        bzero(buf_.data(), buf_.size());
+        int n = read(fd_, buf_.data(), buf_.size());
+        std::cout << "start read: " << fd_ << "\n";
+
+        if (n < 0)
+            throw "Something went wrong with read"; // read exception later
+    }
+
+    void swrite() {
+        int n = write(fd_, buf_.data(), buf_.size());
+        std::cout << "start write: " << fd_ << "\n";
+        if (n < 0)
+            throw "Something went wrong with write";
+    }
 };
+
+class ServerSocket: public Socket {
+    struct sockaddr_in clientaddr;
+    socklen_t clientlen = sizeof(clientaddr); /* byte size of client's address */
+    //
+    SessionSocket* current_session;
+public:
+    explicit ServerSocket(int fd): Socket(fd) {};
+
+    static ServerSocket* createServer(int portno) {
+        /*
+         * socket: create the parent socket
+         */
+        struct sockaddr_in serveraddr;
+        int parentfd = socket(AF_INET, SOCK_STREAM, 0);
+        if (parentfd < 0)
+            throw "ERROR opening socket";
+
+        /* setsockopt: Handy debugging trick that lets
+         * us rerun the server immediately after we kill it;
+         * otherwise we have to wait about 20 secs.
+         * Eliminates "ERROR on binding: Address already in use" error.
+         */
+        int optval = 1;
+        setsockopt(parentfd, SOL_SOCKET, SO_REUSEADDR,
+                   (const void *) &optval, sizeof(int));
+
+        /*
+         * build the server's Internet address
+         */
+        bzero((char *) &serveraddr, sizeof(serveraddr));
+
+        /* this is an Internet address */
+        serveraddr.sin_family = AF_INET;
+
+        /* let the system figure out our IP address */
+        serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+        /* this is the port we will listen on */
+        serveraddr.sin_port = htons((unsigned short) portno);
+
+        /*
+         * bind: associate the parent socket with a port
+         */
+        if (bind(parentfd, (struct sockaddr *) &serveraddr,
+                 sizeof(serveraddr)) < 0)
+            throw "ERROR on binding";
+
+        /*
+         * listen: make this socket ready to accept connection requests
+         */
+        if (listen(parentfd, 10000) < 0) /* allow 5 requests to queue up */
+            throw "ERROR on listen";
+         return new ServerSocket(parentfd);
+    }
+
+    template<typename Callback> void async_accept(EventLoop& e_loop, Callback callback) {
+        e_loop.addEvent(new ReadEvent<Callback>{this, callback});
+    }
+    void sread() {
+        int childfd = accept(fd_, (struct sockaddr *) &clientaddr, &clientlen);
+        std::cout << "start acception: " << childfd << "\n";
+        current_session = new SessionSocket(childfd);
+    }
+
+    void swrite() {
+        // don't now what to put here
+    }
+};
+
 
 //
 //class SocketFactory {
@@ -46,15 +154,4 @@ public:
 //        return new SessionSocket(fd);
 //    }
 //};
-
-class ServerSocket: public Socket {
-//    friend SocketFactory
-
-    ServerSocket(int fd);
-public:
-    template<typename Callback> void async_accept(EventLoop e_loop, Callback callback) {
-
-    }
-};
-
 #endif //ECHO_SERVER_SOCKET_HPP

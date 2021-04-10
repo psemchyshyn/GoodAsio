@@ -6,6 +6,7 @@
 #define ECHO_SERVER_EVENTLOOP_H
 
 #include "EventQueue.h"
+#include "Event.hpp"
 
 class EventLoop {
     EventQueue* event_q;

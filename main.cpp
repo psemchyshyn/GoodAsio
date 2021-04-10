@@ -8,10 +8,18 @@
 
 
 // TODO: bug with session_pull, add read/write to sockets
+#include "Socket.hpp"
 
+
+void hello(){
+    std::cout << "Contagious" << "\n";
+}
 
 int main()
 {
+    EventLoop e{};
+    auto server = ServerSocket::createServer(1024);
+    server->async_accept(e, std::bind(&hello));
 
 //    try {
 //        boost::asio::io_context io_context;

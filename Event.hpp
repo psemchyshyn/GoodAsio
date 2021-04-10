@@ -5,7 +5,7 @@
 #ifndef ECHO_SERVER_EVENT_HPP
 #define ECHO_SERVER_EVENT_HPP
 
-class Socket;
+#include "Socket.hpp"
 
 class Event {
 protected:
@@ -41,8 +41,8 @@ class ReadEvent: public IOEvent{
     Callback cb_;
 public:
     ReadEvent(Socket *socket, Callback callback): IOEvent{socket}, cb_{callback}{};
-    void execute() {
-        this->socket_->read();
+    virtual void execute() {
+        this->socket_->sread();
         cb_();
     }
 };
@@ -53,10 +53,14 @@ class WriteEvent: public IOEvent{
 public:
     WriteEvent(Socket *socket, Callback callback): IOEvent{socket}, cb_{callback}{};
     void execute() {
-        this->socket_->write();
+        this->socket_->swrite();
         cb_();
     }
 };
 
-
+//template<typename Callback>
+//class AcceptEvent: public ReadEvent<Callback> {
+//public:
+//    AcceptEvent(Server)
+//};
 #endif //ECHO_SERVER_EVENT_HPP

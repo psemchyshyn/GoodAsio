@@ -5,7 +5,6 @@
 #ifndef ECHO_SERVER_EVENTQUEUE_H
 #define ECHO_SERVER_EVENTQUEUE_H
 #include <queue>
-#include "Event.hpp"
 #include "SocketPull.h"
 
 
@@ -19,13 +18,13 @@ public:
 
     template<typename Callback>
     void submit(ReadEvent<Callback> *e) {
-        socket_pull.register_read(e);
+        socket_pull.register_read(e->get_socket());
         submit(e);
     }
 
     template<typename Callback>
     void submit(WriteEvent<Callback> *e) {
-        socket_pull.register_write(e);
+        socket_pull.register_write(e->get_socket());
         submit(e);
     }
 
@@ -35,5 +34,5 @@ public:
 
     Event* pop();
     bool empty();
-}
+};
 #endif //ECHO_SERVER_EVENTQUEUE_H
