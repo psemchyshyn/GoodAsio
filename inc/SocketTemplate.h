@@ -36,7 +36,4 @@ public:
     virtual void swrite() =0;
 };
 
-
-
-
 #endif //ECHO_SERVER_SOCKETTEMPLATE_H

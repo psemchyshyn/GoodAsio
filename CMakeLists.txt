@@ -19,9 +19,9 @@ endif ()
 #add_executable(sync_server sync_server.cpp my_time.h)
 #add_executable(client client.cpp my_time.h)
 #add_executable(raw_sync_serv rawc_serv.cpp)
-add_executable(event_loop MainProject/main.cpp MainProject/Event.hpp MainProject/SocketTemplate.h MainProject/SocketPull.cpp
-                MainProject/SocketPull.h MainProject/EventQueue.h MainProject/EventQueue.h MainProject/EventQueue.cpp
-        MainProject/Sockets.h MainProject/EventLoop.h)
+add_executable(event_loop src/main.cpp inc/Event.hpp inc/SocketTemplate.h src/SocketPull.cpp
+        inc/SocketPull.h inc/EventQueue.h inc/EventQueue.h src/EventQueue.cpp
+        inc/Sockets.h inc/EventLoop.h)
 
 # Linking
 #target_link_libraries(sync_server ${Boost_LIBRARIES})

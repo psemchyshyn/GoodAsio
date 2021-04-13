@@ -3,13 +3,10 @@
 //#include <boost/bind/bind.hpp>
 #include <functional>
 #include <iostream>
-#include "Event.hpp"
 
-
-
+#include "../inc/EventLoop.h"
+#include "../inc/Sockets.h"
 // TOD: bug with session_pull, add read/write to sockets
-#include "EventLoop.h"
-#include "Sockets.h"
 
 void hello(){
     std::cout << "Contagious" << "\n";

@@ -1,4 +1,4 @@
-#include "EventQueue.h"
+#include "../inc/EventQueue.h"
 
 Event* EventQueue::pop() {
     if (!ready_tasks.empty()) {
