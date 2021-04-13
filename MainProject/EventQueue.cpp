@@ -1,6 +1,3 @@
-//
-// Created by msemc on 09.04.2021.
-//
 #include "EventQueue.h"
 
 Event* EventQueue::pop() {
@@ -24,7 +21,7 @@ Event* EventQueue::pop() {
         Event* e = ready_tasks.front();
         ready_tasks.pop();
         return e;
-    }
+    } // Потенційно тут можна просто попнути а не копіпастити код, але не факт
 }
 
 bool EventQueue::empty() {

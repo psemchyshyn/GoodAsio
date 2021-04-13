@@ -1,46 +1,7 @@
-//
-// Created by msemc on 09.04.2021.
-//
+#ifndef ECHO_SERVER_SOCKETS_H
+#define ECHO_SERVER_SOCKETS_H
 
-#ifndef ECHO_SERVER_SOCKET_HPP
-#define ECHO_SERVER_SOCKET_HPP
-#include <string>
-#include "EventLoop.h"
-#include "Event.hpp"
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <netdb.h>
-#include <sys/types.h>
-#include <sys/epoll.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <iostream>
-#include <fstream>
-#include "my_time.h"
-#include <vector>
-#include <algorithm>
-#include <set>
-
-class ServerSocket;
-
-class Socket {
-protected:
-    int fd_;
-public:
-    explicit Socket(int fd): fd_(fd){};
-    int get_fd() {
-        return fd_;
-    }
-    virtual ~Socket() {
-        close(fd_);
-    }
-
-    virtual void sread() =0;
-    virtual void swrite() =0;
-};
+#include "SocketTemplate.h"
 
 class SessionSocket: public Socket {
 
@@ -57,18 +18,20 @@ public:
         e_loop.addEvent(new WriteEvent(this, callback));
     }
 
-    void sread() {
+    void sread() override {
         bzero(buf_.data(), buf_.size());
-        int n = read(fd_, buf_.data(), buf_.size());
+        ssize_t n = read(fd_, buf_.data(), buf_.size());
         std::cout << "start read: " << fd_ << "\n";
 
         if (n < 0)
             throw "Something went wrong with read"; // read exception later
     }
 
-    void swrite() {
-        int n = write(fd_, buf_.data(), buf_.size());
+    void swrite() override {
+        ssize_t n = write(fd_, buf_.data(), buf_.size());
+
         std::cout << "start write: " << fd_ << "\n";
+
         if (n < 0)
             throw "Something went wrong with write";
     }
@@ -124,9 +87,9 @@ public:
         /*
          * listen: make this socket ready to accept connection requests
          */
-        if (listen(parentfd, 10000) < 0) /* allow 5 requests to queue up */
+        if (listen(parentfd, 10000) < 0) /* allow 10000 requests to queue up */
             throw "ERROR on listen";
-         return new ServerSocket(parentfd);
+        return new ServerSocket(parentfd);
     }
 
     template<typename Callback> void async_accept(EventLoop& e_loop, Callback callback) {
@@ -139,7 +102,8 @@ public:
     }
 
     void swrite() {
-        // don't now what to put here
+        // Pavlo: don't now what to put here
+        // Danylo: Do we even need this for now? It is like server reading from other server.
     }
 };
 
@@ -154,4 +118,5 @@ public:
 //        return new SessionSocket(fd);
 //    }
 //};
-#endif //ECHO_SERVER_SOCKET_HPP
+
+#endif //ECHO_SERVER_SOCKETS_H

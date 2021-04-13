@@ -1,11 +1,7 @@
-//
-// Created by msemc on 09.04.2021.
-//
-
 #ifndef ECHO_SERVER_SOCKETPULL_H
 #define ECHO_SERVER_SOCKETPULL_H
 #include "Selector.h"
-#include "Socket.hpp"
+#include "SocketTemplate.h"
 
 class SocketPull {
     Selector selector{};

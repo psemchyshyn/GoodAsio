@@ -19,7 +19,10 @@ endif ()
 #add_executable(sync_server sync_server.cpp my_time.h)
 #add_executable(client client.cpp my_time.h)
 #add_executable(raw_sync_serv rawc_serv.cpp)
-add_executable(event_loop main.cpp Event.hpp Socket.hpp SocketPull.cpp SocketPull.h EventQueue.h EventQueue.h EventQueue.cpp)
+add_executable(event_loop MainProject/main.cpp MainProject/Event.hpp MainProject/SocketTemplate.h MainProject/SocketPull.cpp
+                MainProject/SocketPull.h MainProject/EventQueue.h MainProject/EventQueue.h MainProject/EventQueue.cpp
+        MainProject/Sockets.h MainProject/EventLoop.h)
+
 # Linking
 #target_link_libraries(sync_server ${Boost_LIBRARIES})
 #target_link_libraries(async_server ${Boost_LIBRARIES} Threads::Threads)

@@ -1,12 +1,8 @@
-//
-// Created by msemc on 04.04.2021.
-//
-
 #ifndef ECHO_SERVER_EVENTLOOP_H
 #define ECHO_SERVER_EVENTLOOP_H
 
 #include "EventQueue.h"
-#include "Event.hpp"
+
 
 class EventLoop {
     EventQueue* event_q;

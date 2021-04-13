@@ -1,11 +1,7 @@
-//
-// Created by msemc on 09.04.2021.
-//
-
 #ifndef ECHO_SERVER_EVENT_HPP
 #define ECHO_SERVER_EVENT_HPP
 
-#include "Socket.hpp"
+#include "SocketTemplate.h"
 
 class Event {
 protected:
@@ -24,15 +20,20 @@ public:
 
 class IOEvent: public Event {
 protected:
-    Socket *socket_;
+    Socket* socket_;
 public:
     IOEvent(Socket *socket){
         socket_ = socket;
     };
     virtual ~IOEvent() =default;
-    virtual void execute() =0;
+    virtual void execute() = 0;
     virtual Socket* get_socket() {
         return socket_;
+    }
+
+    // Добавив цю функцію бо вона фіксить помилку з е->setReady() в EventQueue::pop
+    void setReady() override {
+        ready = true;
     }
 };
 
@@ -41,7 +42,7 @@ class ReadEvent: public IOEvent{
     Callback cb_;
 public:
     ReadEvent(Socket *socket, Callback callback): IOEvent{socket}, cb_{callback}{};
-    virtual void execute() {
+    void execute() final{
         this->socket_->sread();
         cb_();
     }
@@ -52,7 +53,7 @@ class WriteEvent: public IOEvent{
     Callback cb_;
 public:
     WriteEvent(Socket *socket, Callback callback): IOEvent{socket}, cb_{callback}{};
-    void execute() {
+    void execute() final {
         this->socket_->swrite();
         cb_();
     }

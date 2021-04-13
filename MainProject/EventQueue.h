@@ -1,11 +1,8 @@
-//
-// Created by msemc on 09.04.2021.
-//
-
 #ifndef ECHO_SERVER_EVENTQUEUE_H
 #define ECHO_SERVER_EVENTQUEUE_H
 #include <queue>
 #include "SocketPull.h"
+#include "Event.hpp"
 
 
 class EventQueue {
@@ -14,7 +11,7 @@ class EventQueue {
     std::vector<IOEvent *> io_events;
 
 public:
-    EventQueue() =default;
+    EventQueue() = default;
 
     template<typename Callback>
     void submit(ReadEvent<Callback> *e) {
