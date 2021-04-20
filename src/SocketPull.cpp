@@ -11,15 +11,18 @@ void SocketPull::register_write(Socket *socket) {
     sockets.insert(socket);
 }
 
-std::set<Socket*> SocketPull::getFreeSockets(int timeout) {
+std::vector<Socket*> SocketPull::getFreeSockets(int timeout) {
     auto readable_fds = selector.extract_readables(timeout);
     auto writable_fds = selector.extract_writeables(timeout);
-    std::set<Socket*> result;
+    std::set<Socket*> temp;
+    std::vector<Socket*> result;
     for (auto s: sockets) {
         if (readable_fds.find(s->get_fd()) != readable_fds.end() || writable_fds.find(s->get_fd()) != writable_fds.end()) {
-            result.insert(s);
+            result.push_back(s);
+        } else{
+            temp.insert(s);
         }
     }
-    sockets.erase(result.begin(), result.end());
+    sockets = temp;
     return result; // bug with potential addition to read and write simultaneously
 }

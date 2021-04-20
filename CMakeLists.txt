@@ -14,7 +14,7 @@ if (UNIX AND NOT APPLE)
 endif ()
 
 #add_executable(sel Selector.cpp Selector.h)
-add_executable(select_server test-servers/select_server.cpp)
+#add_executable(select_server test-servers/select_server.cpp)
 #add_executable(async_server my_time.h TCPServer.h TCPServer.cpp TCPConnection.cpp TCPConnection.h main.cpp Event.cpp Event.h)
 #add_executable(sync_server sync_server.cpp my_time.h)
 #add_executable(client client.cpp my_time.h)

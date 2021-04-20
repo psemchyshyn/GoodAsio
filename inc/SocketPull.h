@@ -10,7 +10,7 @@ public:
     SocketPull() =default;
     void register_read(Socket* socket);
     void register_write(Socket* socket);
-    std::set<Socket*> getFreeSockets(int timeout);
+    std::vector<Socket*> getFreeSockets(int timeout);
 };
 
 #endif //ECHO_SERVER_SOCKETPULL_H

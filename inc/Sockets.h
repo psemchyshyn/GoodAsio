@@ -113,15 +113,5 @@ public:
         return new ServerSocket(parentfd);
     }
 };
-//
-//class SocketFactory {
-//    static createServer(int port) {
-//
-//    }
-//
-//    Socket* createSession(int fd) {
-//        return new SessionSocket(fd);
-//    }
-//};
 
 #endif //ECHO_SERVER_SOCKETS_H

@@ -12,7 +12,8 @@ Event* EventQueue::pop() {
 
         auto available_sockets = socket_pull.getFreeSockets(5); // change later
         for (auto e: io_events) {
-            if (available_sockets.find(e->get_socket()) != available_sockets.end()) {
+            if (std::find(available_sockets.begin(), available_sockets.end(), e->get_socket()) != available_sockets.end()) {
+//                if (available_sockets.find(e->get_socket()) != available_sockets.end()) {
                 e->setReady();
                 std::cout << "event added\n"; // тут прінтиться
                 ready_tasks.push(e);
