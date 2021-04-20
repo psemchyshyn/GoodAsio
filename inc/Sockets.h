@@ -40,16 +40,37 @@ public:
 class ServerSocket: public Socket {
     struct sockaddr_in clientaddr;
     socklen_t clientlen = sizeof(clientaddr); /* byte size of client's address */
-    //
+    struct sockaddr_in serveraddr;
     SessionSocket* current_session;
 public:
-    explicit ServerSocket(int fd): Socket(fd) {};
+    explicit ServerSocket(int fd): Socket(fd) {
 
-    static ServerSocket* createServer(int portno) {
-        /*
+    };
+
+    template<typename Callback> void async_accept(EventLoop& e_loop, Callback callback) {
+        e_loop.addEvent(new ReadEvent<Callback>{this, callback});
+    }
+    void sread() {
+        int childfd = accept(fd_, (struct sockaddr *) &clientaddr, &clientlen);
+        std::cout << "start acception: " << childfd << "\n";
+        current_session = new SessionSocket(childfd);
+    }
+
+    void swrite() {
+        // Pavlo: don't now what to put here
+        // Danylo: Do we even need this for now? It is like server reading from other server.
+    }
+};
+
+
+class FactoryServer {
+    struct sockaddr_in serveraddr;
+public:
+    explicit FactoryServer() =default;
+    ServerSocket* createServer(int portno) {         /*
          * socket: create the parent socket
          */
-        struct sockaddr_in serveraddr;
+//        struct sockaddr_in serveraddr;
         int parentfd = socket(AF_INET, SOCK_STREAM, 0);
         if (parentfd < 0)
             throw "ERROR opening socket";
@@ -91,23 +112,7 @@ public:
             throw "ERROR on listen";
         return new ServerSocket(parentfd);
     }
-
-    template<typename Callback> void async_accept(EventLoop& e_loop, Callback callback) {
-        e_loop.addEvent(new ReadEvent<Callback>{this, callback});
-    }
-    void sread() {
-        int childfd = accept(fd_, (struct sockaddr *) &clientaddr, &clientlen);
-        std::cout << "start acception: " << childfd << "\n";
-        current_session = new SessionSocket(childfd);
-    }
-
-    void swrite() {
-        // Pavlo: don't now what to put here
-        // Danylo: Do we even need this for now? It is like server reading from other server.
-    }
 };
-
-
 //
 //class SocketFactory {
 //    static createServer(int port) {

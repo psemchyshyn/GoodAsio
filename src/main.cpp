@@ -15,8 +15,10 @@ void hello(){
 int main()
 {
     EventLoop e{};
-    auto server = ServerSocket::createServer(1024);
+    FactoryServer factory{};
+    auto server = factory.createServer(1024);
     server->async_accept(e, std::bind(&hello));
+    e.run();
 
 //    try {
 //        boost::asio::io_context io_context;

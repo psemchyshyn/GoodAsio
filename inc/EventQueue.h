@@ -16,7 +16,7 @@ public:
     template<typename Callback>
     void submit(ReadEvent<Callback> *e) {
         socket_pull.register_read(e->get_socket());
-        submit(e);
+        submit((IOEvent*) e);
     }
 
     template<typename Callback>

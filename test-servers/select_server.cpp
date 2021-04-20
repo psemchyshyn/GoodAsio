@@ -10,11 +10,11 @@
 #include <arpa/inet.h>
 #include <iostream>
 #include <fstream>
-#include "my_time.h"
+#include "../inc/my_time.h"
 #include <vector>
 #include <algorithm>
 #include <set>
-#include "Selector.h"
+#include "../inc/Selector.h"
 
 
 #define BUFSIZE 1024
@@ -109,33 +109,26 @@ int main(int argc, char **argv) {
     fd_set master_set;
     fd_set writefds;
     fd_set readfds;
-    fd_set accept_set;
+    selector.register_read_fd(parentfd);
+//    fd_set accept_set;
     int max_fd = parentfd;
-    FD_SET(parentfd, &master_set);
+//    FD_SET(parentfd, &master_set);
     descriptors_alive.insert(parentfd);
     std::ofstream f{"../result.txt"};
     while (notdone) {
-        FD_ZERO(&accept_set);          /* initialize the fd set */
-        FD_SET(parentfd, &accept_set); /* add socket fd */
-        struct timeval t{0, 1};
-        int threshold = parentfd < selector.get_max_descriptor() ? selector.get_max_descriptor(): parentfd;
-        if (select(threshold + 1, &accept_set, 0, 0, &t) < 0) { // trickky shit with timer
-            error("ERROR in select");
-        }
-
-        /* if a connection request has arrived, process it */
-        if (FD_ISSET(parentfd, &accept_set)) {
-            childfd = accept(parentfd, (struct sockaddr *) &clientaddr, &clientlen);
-            selector.register_read_fd(childfd);
-            connectcnt++;
-        }
-
         for (auto i: selector.extract_readables(1)) {
-            bzero(buf, BUFSIZE);
-            n = read(i, buf, BUFSIZE);
-            if (n < 0)
-                error("ERROR reading from socket");
-            selector.register_write_fd(i);
+            if (i == 3){
+                childfd = accept(parentfd, (struct sockaddr *) &clientaddr, &clientlen);
+                selector.register_read_fd(childfd);
+                connectcnt++;
+                selector.register_read_fd(parentfd);
+            } else {
+                bzero(buf, BUFSIZE);
+                n = read(i, buf, BUFSIZE);
+                if (n < 0)
+                    error("ERROR reading from socket sdf");
+                selector.register_write_fd(i);
+            }
         }
 
         for (auto i: selector.extract_writeables(1)) {
@@ -143,6 +136,7 @@ int main(int argc, char **argv) {
             if (n < 0)
                 error("ERROR writing to socket");
             close(i);
+            connectcnt--;
         }
 
         if (to_us(get_current_time() - start) > 1000000) {
