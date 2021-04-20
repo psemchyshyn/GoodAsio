@@ -18,6 +18,7 @@ public:
     void run() {
         while (!event_q.empty()) {
             auto event = event_q.pop(); // finished first
+            std::cout << "print before execute\n";
             event->execute();
         }
     }
