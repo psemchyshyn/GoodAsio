@@ -114,10 +114,10 @@ int main(int argc, char **argv) {
     int max_fd = parentfd;
 //    FD_SET(parentfd, &master_set);
     descriptors_alive.insert(parentfd);
-    std::ofstream f{"../result.txt"};
+//    std::ofstream f{"../result.txt"};
     while (notdone) {
         for (auto i: selector.extract_readables(1)) {
-            if (i == 3){
+            if (i == parentfd){
                 childfd = accept(parentfd, (struct sockaddr *) &clientaddr, &clientlen);
                 selector.register_read_fd(childfd);
                 connectcnt++;
@@ -136,13 +136,12 @@ int main(int argc, char **argv) {
             if (n < 0)
                 error("ERROR writing to socket");
             close(i);
-            connectcnt--;
         }
 
         if (to_us(get_current_time() - start) > 1000000) {
-            f.close();
-            f = std::ofstream{"../result.txt"};
-            f << connectcnt << std::endl;
+//            f.close();
+//            f = std::ofstream{"../result.txt"};
+//            f << connectcnt << std::endl;
             start = get_current_time();
 //            v_conn_per_sec.push_back(alive_connections);
             std::cout << "Alive connections: " << connectcnt << std::endl;

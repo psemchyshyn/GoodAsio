@@ -21,7 +21,7 @@ public:
     void sread() override {
         bzero(buf_.data(), buf_.size());
         ssize_t n = read(fd_, buf_.data(), buf_.size());
-        std::cout << "start read: " << fd_ << "\n";
+//        std::cout << "start read: " << fd_ << "\n";
 
         if (n < 0)
             throw "Something went wrong with read"; // read exception later
@@ -30,29 +30,35 @@ public:
     void swrite() override {
         ssize_t n = write(fd_, buf_.data(), buf_.size());
 
-        std::cout << "start write: " << fd_ << "\n";
+//        std::cout << "start write: " << fd_ << "\n";
 
         if (n < 0)
             throw "Something went wrong with write";
     }
+
+    std::string get_buf() {
+        return buf_;
+    }
 };
+
+
+class FactoryServer;
 
 class ServerSocket: public Socket {
     struct sockaddr_in clientaddr;
     socklen_t clientlen = sizeof(clientaddr); /* byte size of client's address */
-    struct sockaddr_in serveraddr;
     SessionSocket* current_session;
+
+    friend FactoryServer;
+
+    explicit ServerSocket(int fd): Socket(fd){};
 public:
-    explicit ServerSocket(int fd): Socket(fd) {
-
-    };
-
     template<typename Callback> void async_accept(EventLoop& e_loop, Callback callback) {
         e_loop.addEvent(new ReadEvent<Callback>{this, callback});
     }
     void sread() {
         int childfd = accept(fd_, (struct sockaddr *) &clientaddr, &clientlen);
-        std::cout << "start acception: " << childfd << "\n";
+//        std::cout << "start acception: " << childfd << "\n";
         current_session = new SessionSocket(childfd);
     }
 
@@ -60,17 +66,21 @@ public:
         // Pavlo: don't now what to put here
         // Danylo: Do we even need this for now? It is like server reading from other server.
     }
+
+    SessionSocket* getCurrentSession() {
+        return current_session;
+    }
 };
 
 
 class FactoryServer {
-    struct sockaddr_in serveraddr;
 public:
     explicit FactoryServer() =default;
-    ServerSocket* createServer(int portno) {         /*
+    ServerSocket* createServer(int portno) {
+        /*
          * socket: create the parent socket
          */
-//        struct sockaddr_in serveraddr;
+        struct sockaddr_in serveraddr;
         int parentfd = socket(AF_INET, SOCK_STREAM, 0);
         if (parentfd < 0)
             throw "ERROR opening socket";

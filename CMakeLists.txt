@@ -22,7 +22,10 @@ endif ()
 add_executable(event_loop src/main.cpp inc/Event.hpp inc/SocketTemplate.h src/SocketPull.cpp
         inc/SocketPull.h inc/EventQueue.h inc/EventQueue.h src/EventQueue.cpp
         inc/Sockets.h inc/EventLoop.h)
-
+add_executable(client Clients/client.cpp)
+add_executable(poll_server test-servers/poll_server.cpp)
+add_executable(select_server test-servers/select_server)
+add_executable(select-original test-servers/select-original.cpp)
 # Linking
 #target_link_libraries(sync_server ${Boost_LIBRARIES})
 #target_link_libraries(async_server ${Boost_LIBRARIES} Threads::Threads)

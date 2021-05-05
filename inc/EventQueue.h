@@ -22,7 +22,7 @@ public:
     template<typename Callback>
     void submit(WriteEvent<Callback> *e) {
         socket_pull.register_write(e->get_socket());
-        submit(e);
+        submit((IOEvent*)e);
     }
 
     void submit(IOEvent *e) {
