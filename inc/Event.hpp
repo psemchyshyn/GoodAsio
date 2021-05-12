@@ -31,10 +31,12 @@ public:
         return socket_;
     }
 
-    // Добавив цю функцію бо вона фіксить помилку з е->setReady() в EventQueue::pop
-    void setReady() override {
-        ready = true;
-    }
+//    // Добавив цю функцію бо вона фіксить помилку з е->setReady() в EventQueue::pop
+//    void setReady() override {
+//        ready = true;
+//    }
+//
+    virtual char get_type() =0;
 };
 
 template<typename Callback>
@@ -46,6 +48,10 @@ public:
         this->socket_->sread();
         cb_();
     }
+
+    char get_type() {
+        return 'r';
+    }
 };
 
 template<typename Callback>
@@ -56,6 +62,10 @@ public:
     void execute() final {
         this->socket_->swrite();
         cb_();
+    }
+
+    char get_type() {
+        return 'w';
     }
 };
 

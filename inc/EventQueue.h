@@ -1,32 +1,25 @@
 #ifndef ECHO_SERVER_EVENTQUEUE_H
 #define ECHO_SERVER_EVENTQUEUE_H
 #include <queue>
-#include "SocketPull.h"
-#include "Event.hpp"
+
+#include "IOEventContainer.h"
 
 
 class EventQueue {
-    SocketPull socket_pull;
     std::queue<Event *> ready_tasks;
-    std::vector<IOEvent *> io_events;
+    IOEventContainer io_events;
 
 public:
     EventQueue() = default;
 
     template<typename Callback>
     void submit(ReadEvent<Callback> *e) {
-        socket_pull.register_read(e->get_socket());
-        submit((IOEvent*) e);
+        io_events.append(e);
     }
 
     template<typename Callback>
     void submit(WriteEvent<Callback> *e) {
-        socket_pull.register_write(e->get_socket());
-        submit((IOEvent*)e);
-    }
-
-    void submit(IOEvent *e) {
-        io_events.push_back(e);
+        io_events.append(e);
     }
 
     Event* pop();

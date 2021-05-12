@@ -13,6 +13,3 @@ while True:
     message = b"Client's request."
     client.send(message)
     client.close()
-
-
-

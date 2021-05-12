@@ -19,9 +19,9 @@ endif ()
 #add_executable(sync_server sync_server.cpp my_time.h)
 #add_executable(client client.cpp my_time.h)
 #add_executable(raw_sync_serv rawc_serv.cpp)
-add_executable(event_loop src/main.cpp inc/Event.hpp inc/SocketTemplate.h src/SocketPull.cpp
-        inc/SocketPull.h inc/EventQueue.h inc/EventQueue.h src/EventQueue.cpp
-        inc/Sockets.h inc/EventLoop.h)
+add_executable(event_loop src/main.cpp inc/Event.hpp inc/SocketTemplate.h
+        inc/EventQueue.h inc/EventQueue.h src/EventQueue.cpp
+        inc/Sockets.h inc/EventLoop.h inc/IOEventContainer.h)
 add_executable(client Clients/client.cpp)
 add_executable(poll_server test-servers/poll_server.cpp)
 add_executable(select_server test-servers/select_server)

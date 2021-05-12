@@ -25,24 +25,21 @@ public:
     explicit SelectError(const std::string& message): runtime_error(message){};
 };
 
-class Selector {
+class Selector{
     fd_set master_read_fds;
     fd_set master_write_fds;
-    std::set<int> alive_reads;
-    std::set<int> alive_writes;
+    fd_set reads_alive_set;
+    fd_set writes_alive_set;
     int max_descriptor = 0;
 
 public:
-    Selector() {
-
-    }
+    Selector() =default;
 
     void register_read_fd(int fd) {
         if (fd > max_descriptor) {
             max_descriptor = fd;
         }
         FD_SET(fd, &master_read_fds);
-        alive_reads.insert(fd);
     }
 
     void register_write_fd(int fd) {
@@ -50,43 +47,49 @@ public:
             max_descriptor = fd;
         }
         FD_SET(fd, &master_write_fds);
-        alive_writes.insert(fd);
     }
 
-    std::set<int> extract_readables(int timeout) { // in micro seconds
-        std::set<int> result;
-        fd_set reads_set = master_read_fds; // later reads_set will be cleared of those descriptors that can't read
+//    std::set<int> extract_readables(int timeout) { // in micro seconds
+//        std::set<int> result;
+//        fd_set reads_set = master_read_fds; // later reads_set will be cleared of those descriptors that can't read
+//        struct timeval t{0, timeout};
+//        if (select(max_descriptor + 1, &reads_set, 0, 0, &t) < 0) {
+//            throw SelectError{"Error in select"};
+//        }
+//        auto temp = alive_reads;
+//        for (auto fd: temp) {
+//            if (FD_ISSET(fd, &reads_set)) {
+//                result.insert(fd);
+//                alive_reads.extract(fd);
+//                FD_CLR(fd, &master_read_fds);
+//            }
+//        }
+//        return result;
+//    }
+
+    void update_all(int timeout) {
+        reads_alive_set = master_read_fds;
+        writes_alive_set = master_write_fds; // later reads_set will be cleared of those descriptors that can't read
         struct timeval t{0, timeout};
-        if (select(max_descriptor + 1, &reads_set, 0, 0, &t) < 0) {
+        if (select(max_descriptor + 1, &reads_alive_set, &writes_alive_set, 0, &t) < 0) {
             throw SelectError{"Error in select"};
         }
-        auto temp = alive_reads;
-        for (auto fd: temp) {
-            if (FD_ISSET(fd, &reads_set)) {
-                result.insert(fd);
-                alive_reads.extract(fd);
-                FD_CLR(fd, &master_read_fds);
-            }
-        }
-        return result;
     }
 
-    std::set<int> extract_writeables(int timeout) { // in micro seconds
-        std::set<int> result;
-        fd_set write_set = master_write_fds; // later reads_set will be cleared of those descriptors that can't read
-        struct timeval t{0, timeout};
-        if (select(max_descriptor + 1, 0, &write_set, 0, &t) < 0) {
-            throw SelectError{"Error in select"};
+    bool is_set_read(int fd) {
+        bool is_set = FD_ISSET(fd, &reads_alive_set);
+        if (is_set) {
+            FD_CLR(fd, &master_read_fds);
         }
-        auto temp = alive_writes;
-        for (auto fd: temp) {
-            if (FD_ISSET(fd, &write_set)) {
-                result.insert(fd);
-                alive_writes.extract(fd);
-                FD_CLR(fd, &master_write_fds);
-            }
+        return is_set;
+    }
+
+    bool is_set_write(int fd) {
+        bool is_set = FD_ISSET(fd, &writes_alive_set);
+        if (is_set) {
+            FD_CLR(fd, &master_write_fds);
         }
-        return result;
+        return is_set;
     }
 
     int get_max_descriptor() {
