@@ -13,9 +13,11 @@ if (UNIX AND NOT APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 endif ()
 
+
+
 #add_executable(sel Selector.cpp Selector.h)
 #add_executable(select_server test-servers/select_server.cpp)
-#add_executable(async_server my_time.h TCPServer.h TCPServer.cpp TCPConnection.cpp TCPConnection.h main.cpp Event.cpp Event.h)
+add_executable(async_server inc/my_time.h test-servers/TCPServer.h test-servers/TCPServer.cpp test-servers/TCPConnection.cpp test-servers/TCPConnection.h test-servers/asio_main.cpp)
 #add_executable(sync_server sync_server.cpp my_time.h)
 #add_executable(client client.cpp my_time.h)
 #add_executable(raw_sync_serv rawc_serv.cpp)

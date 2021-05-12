@@ -3,7 +3,7 @@
 #include <boost/asio.hpp>
 #include <atomic>
 #include "TCPConnection.h"
-#include "my_time.h"
+#include "../inc/my_time.h"
 
 using boost::asio::ip::tcp;
 
