@@ -128,6 +128,7 @@ int main(int argc, char **argv) {
              * accept: wait for a connection request
              */
             childfd = accept(parentfd, (struct sockaddr *) &clientaddr, &clientlen);
+            std::cout << "Accepted: " << childfd << '\n';
             if (childfd < 0)
                 error("ERROR on accept");
             connectcnt++;

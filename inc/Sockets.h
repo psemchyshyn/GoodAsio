@@ -58,7 +58,7 @@ public:
     }
     void sread() {
         int childfd = accept(fd_, (struct sockaddr *) &clientaddr, &clientlen);
-//        std::cout << "start acception: " << childfd << "\n";
+//        std::cout << "Accepted: " << childfd << "\n";
         current_session = new SessionSocket(childfd);
     }
 

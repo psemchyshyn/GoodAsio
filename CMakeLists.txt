@@ -29,7 +29,6 @@ add_executable(poll_server test-servers/poll_server.cpp)
 add_executable(select_server test-servers/select_server)
 add_executable(select-original test-servers/select-original.cpp)
 
-add_executable(hello main.cpp)
 add_executable(epoll_server test-servers/epoll_server.cpp)
 # Linking
 #target_link_libraries(sync_server ${Boost_LIBRARIES})

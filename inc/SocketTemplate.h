@@ -29,6 +29,7 @@ public:
         return fd_;
     }
     virtual ~Socket() {
+//        std::cout << "Closed: " << fd_ << '\n';
         close(fd_);
     }
 

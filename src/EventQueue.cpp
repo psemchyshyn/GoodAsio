@@ -11,7 +11,7 @@ Event* EventQueue::pop() {
             io_events.update_all_p(1);
             auto ready_io = io_events.get_ready_io_evs();
             while (!ready_io.empty()) {
-                ready_tasks.push(ready_io.front());
+                ready_tasks.push(ready_io.back());
                 ready_io.pop_back();
             }
         }

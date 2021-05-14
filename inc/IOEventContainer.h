@@ -13,10 +13,10 @@ class IOEventContainer {
     static const char WRITE = 'w';
     std::vector<IOEvent*> ready;
     std::vector<IOEvent*> container;
-    Pollerr* tracker;
+    IOManager* tracker;
 
 public:
-    IOEventContainer(Pollerr* tracker_){
+    IOEventContainer(IOManager* tracker_){
         tracker = tracker_;
     }; // type epoll_vs select
 
@@ -50,7 +50,7 @@ public:
 
     void update_all_p(int timeout) {
         auto res = tracker->extract_all(timeout);
-        ready.clear();
+        ready = std::vector<IOEvent*>{};
         std::vector<IOEvent*> temp;
         for (auto e: container){
             auto fd = e->get_socket()->get_fd();
@@ -65,7 +65,7 @@ public:
     }
 
     std::vector<IOEvent*> get_ready_io_evs() {
-        return std::move(ready);
+        return ready;
     }
 
     bool empty() const {

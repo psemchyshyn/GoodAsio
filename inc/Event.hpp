@@ -26,7 +26,7 @@ public:
         socket_ = socket;
     };
     virtual ~IOEvent() =default;
-    virtual void execute() = 0;
+    virtual void execute() =0;
     virtual Socket* get_socket() {
         return socket_;
     }
@@ -44,12 +44,12 @@ class ReadEvent: public IOEvent{
     Callback cb_;
 public:
     ReadEvent(Socket *socket, Callback callback): IOEvent{socket}, cb_{callback}{};
-    void execute() final{
+    void execute() override {
         this->socket_->sread();
         cb_();
     }
 
-    char get_type() {
+    char get_type() override {
         return 'r';
     }
 };
@@ -59,12 +59,12 @@ class WriteEvent: public IOEvent{
     Callback cb_;
 public:
     WriteEvent(Socket *socket, Callback callback): IOEvent{socket}, cb_{callback}{};
-    void execute() final {
+    void execute() override {
         this->socket_->swrite();
         cb_();
     }
 
-    char get_type() {
+    char get_type() override {
         return 'w';
     }
 };

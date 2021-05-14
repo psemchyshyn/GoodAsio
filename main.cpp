@@ -10,6 +10,5 @@ int main() {
     set.insert(a);
     std::pair<int, char> b{4, 'f'};
     std::cout << (set.find(b)->first);
-
     return 0;
 }

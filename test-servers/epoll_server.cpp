@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
                 n = write(events[i].data.fd, buf, strlen(buf));
                 if (n < 0)
                     throw "ERROR writing to socket";
-                epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[i].data.fd, &ev);
+                epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[i].data.fd, &events[i]);
                 close(events[i].data.fd);
             }
         }

@@ -80,6 +80,7 @@ int main(int argc, char** argv) {
             if (tracking.at(i).revents & POLLIN) {
                 if (tracking.at(i).fd == parentfd) {
                     childfd = accept(parentfd, (struct sockaddr *) &clientaddr, &clientlen);
+                    std::cout << "Accepted: " << childfd << '\n';
                     struct pollfd curr;
                     curr.fd = childfd;
                     curr.events = POLLIN;

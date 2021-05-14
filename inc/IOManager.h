@@ -29,9 +29,7 @@ class IOManager {
 public:
     virtual void register_read_fd(int fd) =0;
     virtual void register_write_fd(int fd) =0;
-    virtual bool is_set_read(int fd) =0;
-    virtual bool is_set_write(int fd) =0;
-    virtual void update_all(int timeout) =0;
+    virtual std::set<std::pair<int, char>> extract_all(int timeout) =0;
 };
 
 class SelectError: public std::runtime_error {
@@ -44,11 +42,15 @@ public:
     explicit PollError(const std::string& message): runtime_error(message){};
 };
 
+class EPollError: public std::runtime_error {
+public:
+    explicit EPollError(const std::string& message): runtime_error(message){};
+};
+
 class Selector: public IOManager{
     fd_set master_read_fds;
     fd_set master_write_fds;
-    fd_set reads_alive_set;
-    fd_set writes_alive_set;
+    std::vector<std::pair<int, char>> tracking;
     int max_descriptor = 0;
 
 public:
@@ -58,6 +60,7 @@ public:
         if (fd > max_descriptor) {
             max_descriptor = fd;
         }
+        tracking.push_back(std::pair{fd, 'r'});
         FD_SET(fd, &master_read_fds);
     }
 
@@ -65,110 +68,57 @@ public:
         if (fd > max_descriptor) {
             max_descriptor = fd;
         }
+        tracking.push_back(std::pair{fd, 'w'});
         FD_SET(fd, &master_write_fds);
     }
 
-    void update_all(int timeout) override {
-        reads_alive_set = master_read_fds;
-        writes_alive_set = master_write_fds; // later reads_set will be cleared of those descriptors that can't read
+    std::set<std::pair<int, char>> extract_all(int timeout) override {
+        fd_set reads_alive_set = master_read_fds;
+        fd_set writes_alive_set = master_write_fds; // later reads_set will be cleared of those descriptors that can't read
         struct timeval t{0, timeout};
         if (select(max_descriptor + 1, &reads_alive_set, &writes_alive_set, 0, &t) < 0) {
             throw SelectError{"Error in select"};
         }
-    }
 
-    bool is_set_read(int fd) {
-        bool is_set = FD_ISSET(fd, &reads_alive_set);
-        if (is_set) {
-            FD_CLR(fd, &master_read_fds);
+        std::set<std::pair<int, char>> result;
+        for (size_t i = 0; i < tracking.size(); i++) {
+            if (tracking.at(i).second == 'r' && FD_ISSET(tracking.at(i).first, &reads_alive_set)) {
+                result.insert(tracking.at(i));
+                FD_CLR(tracking.at(i).first, &master_read_fds);
+            } else if (tracking.at(i).second == 'w' && FD_ISSET(tracking.at(i).first, &writes_alive_set)) {
+                result.insert(tracking.at(i));
+                FD_CLR(tracking.at(i).first, &master_write_fds);
+            }
         }
-        return is_set;
-    }
 
-    bool is_set_write(int fd) {
-        bool is_set = FD_ISSET(fd, &writes_alive_set);
-        if (is_set) {
-            FD_CLR(fd, &master_write_fds);
-        }
-        return is_set;
-    }
-
-    int get_max_descriptor() {
-        return max_descriptor;
+        tracking.erase(std::remove_if(tracking.begin(), tracking.end(), [&result](std::pair<int, char> e) {
+            return result.find(e) != result.end();
+        }), tracking.end());
+        return result;
     }
 };
 
 
 class Poller: public IOManager {
-    std::unordered_map<int, struct pollfd> tracker;
-//    std::vector<struct pollfd> tracking;
-public:
-    void register_read_fd(int fd) {
-        struct pollfd curr;
-        curr.fd = fd;
-        curr.events = POLLIN;
-//        tracking.push_back(curr);
-        tracker[fd] = curr;
-    }
-
-    void register_write_fd(int fd) {
-        struct pollfd curr;
-        curr.fd = fd;
-        curr.events = POLLOUT;
-//        tracking.push_back(curr);
-        tracker[fd] = curr;
-    }
-
-    void update_all(int timeout) {
-        std::vector<struct pollfd> temp(tracker.size());
-        transform(tracker.begin(), tracker.end(), temp.begin(), [](auto pair){return pair.second;});
-        if (poll(temp.data(), temp.size(), timeout) == -1) {
-            throw "Error while polling";
-        }
-    }
-
-
-
-    bool is_set_read(int fd) {
-        auto curr = tracker.find(fd);
-        if (curr != tracker.end() && (curr->second.revents & POLLIN)) {
-            tracker.erase(curr);
-            return true;
-        }
-        return false;
-    }
-
-
-    bool is_set_write(int fd) {
-        auto curr = tracker.find(fd);
-        if (curr != tracker.end() && (curr->second.revents & POLLOUT)) {
-            tracker.erase(curr);
-            return true;
-        }
-        return false;
-    }
-};
-
-class Pollerr {
     std::vector<struct pollfd> tracking;
 public:
-    void register_read_fd(int fd) {
+    void register_read_fd(int fd) override {
         struct pollfd curr;
         curr.fd = fd;
         curr.events = POLLIN;
         tracking.push_back(curr);
     }
 
-    void register_write_fd(int fd) {
+    void register_write_fd(int fd) override {
         struct pollfd curr;
         curr.fd = fd;
         curr.events = POLLOUT;
         tracking.push_back(curr);
     }
 
-    std::set<std::pair<int, char>> extract_all(int timeout) {
+    std::set<std::pair<int, char>> extract_all(int timeout) override {
         if (poll(tracking.data(), tracking.size(), timeout) == -1) {
-            throw "Error while polling";
+            throw PollError{"error in poll"};
         }
         std::set<std::pair<int, char>> result;
         for (size_t i = 0; i < tracking.size(); i++) {
@@ -181,6 +131,48 @@ public:
         tracking.erase(std::remove_if(tracking.begin(), tracking.end(), [&result](struct pollfd e) {
             return result.find(std::pair{e.fd, 'r'}) != result.end() || result.find(std::pair{e.fd, 'w'}) != result.end();
         }), tracking.end());
+        return result;
+    }
+};
+
+class Epoller: public IOManager {
+    static const int EVENTS_SIZE = 10000;
+    struct epoll_event events[EVENTS_SIZE];
+    int epoll_instance_fd;
+public:
+    Epoller(): IOManager() {
+        epoll_instance_fd = epoll_create1(0);
+    }
+
+    void register_read_fd(int fd) override {
+        struct epoll_event ev;
+        ev.data.fd = fd;
+        ev.events = EPOLLIN;
+        epoll_ctl(epoll_instance_fd, EPOLL_CTL_ADD, fd, &ev);
+    }
+
+    void register_write_fd(int fd) override {
+        struct epoll_event ev;
+        ev.data.fd = fd;
+        ev.events = EPOLLOUT;
+        epoll_ctl(epoll_instance_fd, EPOLL_CTL_ADD, fd, &ev);
+    }
+
+    std::set<std::pair<int, char>> extract_all(int timeout) override {
+        auto ready_num = epoll_wait(epoll_instance_fd, events, EVENTS_SIZE, timeout);
+        if (ready_num == -1) {
+            throw "Error while polling";
+        }
+        std::set<std::pair<int, char>> result;
+        for (size_t i = 0; i < ready_num; i++) {
+            int desc = events[i].data.fd;
+            if (events[i].events == POLLIN) {
+                result.insert(std::pair{desc, 'r'});
+            } else if (events[i].events == POLLOUT) {
+                result.insert(std::pair{desc, 'w'});
+            }
+            epoll_ctl(epoll_instance_fd, EPOLL_CTL_DEL, events[i].data.fd, &events[i]);
+        }
         return result;
     }
 };
