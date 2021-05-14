@@ -8,7 +8,7 @@ Event* EventQueue::pop() {
 //            std::cout << "event returned\n";
             return e;
         } else {
-            io_events.update_all(1);
+            io_events.update_all_p(1);
             auto ready_io = io_events.get_ready_io_evs();
             while (!ready_io.empty()) {
                 ready_tasks.push(ready_io.front());

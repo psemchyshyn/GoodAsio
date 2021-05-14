@@ -58,7 +58,6 @@ public:
         }), tracking.end());
         return result;
     }
-    return 0;
 }
 
 

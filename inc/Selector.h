@@ -49,24 +49,6 @@ public:
         FD_SET(fd, &master_write_fds);
     }
 
-//    std::set<int> extract_readables(int timeout) { // in micro seconds
-//        std::set<int> result;
-//        fd_set reads_set = master_read_fds; // later reads_set will be cleared of those descriptors that can't read
-//        struct timeval t{0, timeout};
-//        if (select(max_descriptor + 1, &reads_set, 0, 0, &t) < 0) {
-//            throw SelectError{"Error in select"};
-//        }
-//        auto temp = alive_reads;
-//        for (auto fd: temp) {
-//            if (FD_ISSET(fd, &reads_set)) {
-//                result.insert(fd);
-//                alive_reads.extract(fd);
-//                FD_CLR(fd, &master_read_fds);
-//            }
-//        }
-//        return result;
-//    }
-
     void update_all(int timeout) {
         reads_alive_set = master_read_fds;
         writes_alive_set = master_write_fds; // later reads_set will be cleared of those descriptors that can't read

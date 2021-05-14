@@ -17,18 +17,21 @@ endif ()
 
 #add_executable(sel Selector.cpp Selector.h)
 #add_executable(select_server test-servers/select_server.cpp)
-add_executable(async_server inc/my_time.h test-servers/TCPServer.h test-servers/TCPServer.cpp test-servers/TCPConnection.cpp test-servers/TCPConnection.h test-servers/asio_main.cpp)
+add_executable(async_server inc/my_time.h test-servers/TCPServer.h test-servers/TCPServer.cpp test-servers/TCPConnection.cpp test-servers/TCPConnection.h test-servers/asio_main.cpp )
 #add_executable(sync_server sync_server.cpp my_time.h)
 #add_executable(client client.cpp my_time.h)
 #add_executable(raw_sync_serv rawc_serv.cpp)
 add_executable(event_loop src/main.cpp inc/Event.hpp inc/SocketTemplate.h
-        inc/EventQueue.h inc/EventQueue.h src/EventQueue.cpp
-        inc/Sockets.h inc/EventLoop.h inc/IOEventContainer.h)
+        inc/EventQueue.h src/EventQueue.cpp
+        inc/Sockets.h inc/EventLoop.h inc/IOEventContainer.h inc/IOManager.h)
 add_executable(client Clients/client.cpp)
 add_executable(poll_server test-servers/poll_server.cpp)
 add_executable(select_server test-servers/select_server)
 add_executable(select-original test-servers/select-original.cpp)
+
+add_executable(hello main.cpp)
+add_executable(epoll_server test-servers/epoll_server.cpp)
 # Linking
 #target_link_libraries(sync_server ${Boost_LIBRARIES})
-#target_link_libraries(async_server ${Boost_LIBRARIES} Threads::Threads)
+target_link_libraries(async_server ${Boost_LIBRARIES} Threads::Threads)
 #target_link_libraries(client ${Boost_LIBRARIES})

@@ -12,7 +12,7 @@ class EchoServer {
     EventLoop& context;
     ServerSocket* acceptor;
     std::chrono::high_resolution_clock::time_point start;
-    int connections_alive;
+    size_t connections_alive = 0;
 public:
     EchoServer(EventLoop& context_, ServerSocket* acceptor_):
         context{context_},
@@ -50,7 +50,7 @@ public:
         if (to_us(get_current_time() - start) > 1000000) {
             start = get_current_time();
 //            v_conn_per_sec.push_back(server.connections_alive);
-            std::cout << connections_alive << std::endl;
+            std::cout << "Connections alive: " << connections_alive << '\n';
             connections_alive = 0;
         }
     }
