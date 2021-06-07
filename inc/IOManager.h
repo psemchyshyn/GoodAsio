@@ -1,6 +1,3 @@
-//
-// Created by msemc on 12.05.2021.
-//
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>

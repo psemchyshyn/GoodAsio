@@ -63,8 +63,8 @@ public:
     }
 
     void swrite() {
-        // Pavlo: don't now what to put here
-        // Danylo: Do we even need this for now? It is like server reading from other server.
+        // Pavlo:I don't know what to put here
+        // Danylo: Do we even need this for now? Is it like server reading from other server?
     }
 
     SessionSocket* getCurrentSession() {

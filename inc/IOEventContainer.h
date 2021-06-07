@@ -1,7 +1,3 @@
-//
-// Created by msemc on 11.05.2021.
-//
-
 #ifndef ECHO_SERVER_IOEVENTCONTAINER_H
 #define ECHO_SERVER_IOEVENTCONTAINER_H
 #include "IOManager.h"

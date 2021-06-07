@@ -2,10 +2,11 @@
 #define ECHO_SERVER_EVENTLOOP_H
 
 #include "EventQueue.h"
-
+#include "queue"
 
 class EventLoop {
-    EventQueue event_q{};
+    EventQueue event_q;
+
 public:
     template <typename Callback> void addEvent(ReadEvent<Callback>* event) {
         event_q.submit(event);
@@ -15,19 +16,15 @@ public:
         event_q.submit(event);
     }
 
+    template<typename Callback> void addEvent(ClockEvent<Callback>* event) {
+        event_q.submit(event);
+    }
+
     void run() {
         while (!event_q.empty()) {
-            auto event = event_q.pop(); // finished first
-//            std::cout << "print before execute\n";
+            auto event = event_q.pop(); // переписати це на нонблокінг?
             event->execute();
         }
     }
 };
-
-//class Context {
-//    EventLoop ev_loop{};
-//public:
-//    Context() {};
-//};
-
 #endif //ECHO_SERVER_EVENTLOOP_H
