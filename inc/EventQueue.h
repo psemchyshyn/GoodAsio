@@ -14,7 +14,7 @@ public:
 
 class EventQueue {
     std::queue<Event *> ready_tasks;
-    IOEventContainer io_events{new Epoller{}};
+    IOEventContainer io_events{new Poller{}};
     std::priority_queue<TimeEvent*, std::vector<TimeEvent*>, Compare> timer_events;
 public:
 

@@ -16,6 +16,7 @@ class TCPServer {
     std::chrono::high_resolution_clock::time_point start;
     int limit = 10000;
     int current_accepts = 0;
+    int loop = 0;
 
     friend class TCPConnection;
 
