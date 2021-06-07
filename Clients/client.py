@@ -11,5 +11,5 @@ while True:
     client.connect((IP_ADDRESS, PORT))
     message = b"Client's request."
     client.send(message)
-    a = client.recv(1024)
+    # a = client.recv(1024)
     client.close()

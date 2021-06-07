@@ -1,21 +1,20 @@
+//
+// Created by msemc on 04.06.2021.
+//
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <netdb.h>
 #include <sys/types.h>
-#include <sys/epoll.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <iostream>
 #include <fstream>
-#include "../inc/my_time.h"
-#include <vector>
-#include <algorithm>
-#include <set>
-#include "../inc/Selector.h"
 
+#include "../inc/my_time.h"
 
 #define BUFSIZE 1024
 
@@ -37,7 +36,7 @@ int main(int argc, char **argv) {
     char buf[BUFSIZE]; /* message buffer */
     int optval; /* flag value for setsockopt */
     int n; /* message byte size */
-    int connectcnt = 0; /* number of connection requests */
+    int connectcnt; /* number of connection requests */
     int notdone;
     fd_set readfds;
 
@@ -63,7 +62,7 @@ int main(int argc, char **argv) {
      * Eliminates "ERROR on binding: Address already in use" error.
      */
     optval = 1;
-    setsockopt(parentfd, SOL_SOCKET, SO_REUSEADDR,
+    setsockopt(parentfd, SOL_SOCKET, SO_REUSEPORT,
                (const void *)&optval , sizeof(int));
 
     /*
@@ -98,7 +97,7 @@ int main(int argc, char **argv) {
     clientlen = sizeof(clientaddr);
     notdone = 1;
     connectcnt = 0;
-    printf("server> ");
+//    printf("server> ");
     fflush(stdout);
 
     /*
@@ -109,6 +108,7 @@ int main(int argc, char **argv) {
      * If command, then process command.
      */
     auto start = get_current_time();
+//    std::ofstream f{"../result.txt"};
     while (notdone) {
 
         /*
@@ -117,18 +117,17 @@ int main(int argc, char **argv) {
          */
         FD_ZERO(&readfds);          /* initialize the fd set */
         FD_SET(parentfd, &readfds); /* add socket fd */
+//        FD_SET(0, &readfds);        /* add stdin fd (0) */
         if (select(parentfd+1, &readfds, 0, 0, 0) < 0) {
             error("ERROR in select");
         }
-
 
         /* if a connection request has arrived, process it */
         if (FD_ISSET(parentfd, &readfds)) {
             /*
              * accept: wait for a connection request
              */
-            childfd = accept(parentfd, (struct sockaddr *) &clientaddr, &clientlen);
-            std::cout << "Accepted: " << childfd << '\n';
+            childfd = accept(parentfd,(struct sockaddr *) &clientaddr, &clientlen);
             if (childfd < 0)
                 error("ERROR on accept");
             connectcnt++;
@@ -141,6 +140,7 @@ int main(int argc, char **argv) {
             if (n < 0)
                 error("ERROR reading from socket");
 
+
             /*
              * write: echo the input string back to the client
              */
@@ -150,19 +150,20 @@ int main(int argc, char **argv) {
 
             close(childfd);
         }
+
         if (to_us(get_current_time() - start) > 1000000) {
 //            f.close();
-//            f = std::ofstream{"../result.txt"};
+//            f = std::ofstream {"../result.txt"};
 //            f << connectcnt << std::endl;
             start = get_current_time();
 //            v_conn_per_sec.push_back(alive_connections);
-            std::cout << "Alive connections: " << connectcnt << std::endl;
+            std::cout << connectcnt << std::endl;
             connectcnt = 0;
         }
     }
 
     /* clean up */
-    printf("Terminating server.\n");
+//    printf("Terminating server.\n");
     close(parentfd);
     exit(0);
 }
