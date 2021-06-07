@@ -7,7 +7,7 @@
 
 class EventQueue {
     std::queue<Event *> ready_tasks;
-    IOEventContainer io_events{new Epoller{}};
+    IOEventContainer io_events{new Poller{}};
 public:
     EventQueue() = default;
 

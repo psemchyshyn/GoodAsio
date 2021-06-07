@@ -51,7 +51,8 @@ void TCPConnection::count() {
     if (to_us(get_current_time() - server.start) > 1000000) {
         server.start = get_current_time();
         server.v_conn_per_sec.push_back(server.connections_alive);
-        std::cout << server.connections_alive << std::endl;
+        std::cout << "[Loop " << server.loop << "]" "Alive connections from " << std::this_thread::get_id() << ":" << server.connections_alive << std::endl;
         server.connections_alive = 0;
+        server.loop++;
     }
 };

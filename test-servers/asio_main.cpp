@@ -4,22 +4,28 @@
 
 #include "TCPServer.h"
 #include <iostream>
+#include <thread>
+#include <vector>
 #include <boost/bind/bind.hpp>
 
-
+void runEventLoop(boost::asio::io_context *e) {
+    e->run();
+}
 
 int main()
 {
+    std::vector<std::thread> threads;
     try {
-        boost::asio::io_context io_context;
-        TCPServer server(io_context);
-        io_context.run();
-//        std::thread t(boost::bind(&boost::asio::io_context::run, &io_context));
-//        t.join();
-//        io_context.run();
-//        boost::asio::io_context::run(&io_context);
+        for (int i = 0; i < 2; i++) {
+            auto io_context = new boost::asio::io_context{};
+            auto server = new TCPServer(*io_context);
+            threads.push_back(std::thread(&runEventLoop, io_context));
+        }
     } catch (std::exception& e) {
         std::cerr << e.what() << std::endl;
+    }
+    for (auto &t: threads) {
+        t.join();
     }
     return 0;
 }

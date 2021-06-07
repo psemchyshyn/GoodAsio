@@ -29,7 +29,7 @@
 
 int BUFSIZE = 10;
 
-void acceptoring(std::atomic<int> &cnt, std::mutex& m, std::chrono::high_resolution_clock::time_point *start) {
+void acceptoring() {
     int parentfd; /* parent socket */
     int childfd; /* child socket */
     int portno; /* port to listen on */
@@ -39,6 +39,8 @@ void acceptoring(std::atomic<int> &cnt, std::mutex& m, std::chrono::high_resolut
     char buf[BUFSIZE]; /* message buffer */
     int optval; /* flag value for setsockopt */
     int n; /* message byte size */
+    int cnt;
+    int loop;
 
     portno = 1024;
     parentfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -66,7 +68,7 @@ void acceptoring(std::atomic<int> &cnt, std::mutex& m, std::chrono::high_resolut
     parent.fd = parentfd;
     parent.events = POLLIN;
     tracking.push_back(parent);
-
+    auto start = get_current_time();
     while (true) {
         if (poll(tracking.data(), tracking.size(), 0) == -1) {
             throw "Error while polling";
@@ -103,32 +105,28 @@ void acceptoring(std::atomic<int> &cnt, std::mutex& m, std::chrono::high_resolut
         }), tracking.end());
         tracking.insert(tracking.end(), extend.begin(), extend.end());
 
-        if (to_us(get_current_time() - *start) > 1000000) {
+
+        if (to_us(get_current_time() - start) > 1000000) {
 //            f.close();
 //            f = std::ofstream{"../result.txt"};
 //            f << connectcnt << std::endl;
-            if (m.try_lock()) {
-                if (to_us(get_current_time() - *start) > 1000000) {
-                    *start = get_current_time();
-//                  v_conn_per_sec.push_back(alive_connections);
-                    std::cout << "Accepted from " << std::this_thread::get_id() << '\n';
-                    std::cout << "Alive connections: " << cnt << std::endl;
-                    cnt = 0;
-                }
-                m.unlock();
-            }
+            start = get_current_time();
+//            v_conn_per_sec.push_back(alive_connections);
+            std::cout << "[Loop " << loop << "]" "Alive connections from " << std::this_thread::get_id() << ":" << cnt << std::endl;
+            cnt = 0;
+            loop++;
         }
     }
+
+
 }
 
 int main(int argc, char** argv) {
     auto start = get_current_time();
-    std::mutex m;
-    std::atomic<int> connectcnt = 0;
     std::vector<std::thread> v;
 
-    for (int i = 0; i < 4; i++) {
-        v.push_back(std::thread (&acceptoring, std::ref(connectcnt), std::ref(m), &start));
+    for (int i = 0; i < 2; i++) {
+        v.push_back(std::thread (&acceptoring));
     }
 
     for (auto &t: v) {

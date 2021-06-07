@@ -91,7 +91,7 @@ public:
          * Eliminates "ERROR on binding: Address already in use" error.
          */
         int optval = 1;
-        setsockopt(parentfd, SOL_SOCKET, SO_REUSEADDR,
+        setsockopt(parentfd, SOL_SOCKET, SO_REUSEPORT,
                    (const void *) &optval, sizeof(int));
 
         /*
@@ -118,7 +118,7 @@ public:
         /*
          * listen: make this socket ready to accept connection requests
          */
-        if (listen(parentfd, 10000) < 0) /* allow 10000 requests to queue up */
+        if (listen(parentfd, 5) < 0) /* allow 10000 requests to queue up */
             throw "ERROR on listen";
         return new ServerSocket(parentfd);
     }

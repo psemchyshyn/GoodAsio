@@ -31,7 +31,7 @@ void error(char *msg) {
 }
 
 
-void acceptoring(std::atomic<int> &cnt, std::mutex& m, std::chrono::high_resolution_clock::time_point *start) {
+void acceptoring() {
     int childfd;
     int parentfd; /* parent socket */
     int portno; /* port to listen on */
@@ -42,6 +42,8 @@ void acceptoring(std::atomic<int> &cnt, std::mutex& m, std::chrono::high_resolut
     int optval; /* flag value for setsockopt */
     int n; /* message byte size */
     int notdone;
+    int loop = 1;
+    int cnt;
     fd_set readfds;
 
     /*
@@ -96,6 +98,7 @@ void acceptoring(std::atomic<int> &cnt, std::mutex& m, std::chrono::high_resolut
 
     /* initialize some things for the main loop */
     clientlen = sizeof(clientaddr);
+    auto start = get_current_time();
     while (1) {
         childfd = accept(parentfd, (struct sockaddr *) &clientaddr, &clientlen);
         if (childfd < 0)
@@ -119,20 +122,15 @@ void acceptoring(std::atomic<int> &cnt, std::mutex& m, std::chrono::high_resolut
 
         close(childfd);
 
-        if (to_us(get_current_time() - *start) > 1000000) {
+        if (to_us(get_current_time() - start) > 1000000) {
 //            f.close();
 //            f = std::ofstream{"../result.txt"};
 //            f << connectcnt << std::endl;
-            if (m.try_lock()) {
-                if (to_us(get_current_time() - *start) > 1000000) {
-                    *start = get_current_time();
-//                  v_conn_per_sec.push_back(alive_connections);
-                    std::cout << "Accepted from " << std::this_thread::get_id() << '\n';
-                    std::cout << "Alive connections: " << cnt << std::endl;
-                    cnt = 0;
-                }
-                m.unlock();
-            }
+            start = get_current_time();
+//            v_conn_per_sec.push_back(alive_connections);
+            std::cout << "[Loop " << loop << "]" "Alive connections from " << std::this_thread::get_id() << ":" << cnt << std::endl;
+            cnt = 0;
+            loop++;
         }
     }
     close(parentfd);
@@ -217,9 +215,6 @@ int main(int argc, char **argv) {
 //     * and close connection.
 //     * If command, then process command.
 //     */
-    auto start = get_current_time();
-    std::mutex m;
-    std::atomic<int> connectcnt = 0;
     std::vector<std::thread> v;
     if (notdone) {
 
@@ -233,7 +228,7 @@ int main(int argc, char **argv) {
 //            error("ERROR in select");
 //        }
         for (int i = 0; i < 4; i++) {
-            v.push_back(std::thread (&acceptoring, std::ref(connectcnt), std::ref(m), &start));
+            v.push_back(std::thread (&acceptoring));
         }
 
 

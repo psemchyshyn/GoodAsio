@@ -38,4 +38,5 @@ add_executable(multithreaded_poll_server test-servers/multithreaded_poll_server.
 target_link_libraries(multithreaded_poll_server Threads::Threads)
 target_link_libraries(multithreaded Threads::Threads)
 target_link_libraries(async_server ${Boost_LIBRARIES} Threads::Threads)
+target_link_libraries(event_loop Threads::Threads)
 #target_link_libraries(client ${Boost_LIBRARIES})
