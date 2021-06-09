@@ -92,7 +92,7 @@ void acceptoring() {
     /*
      * listen: make this socket ready to accept connection requests
      */
-    if (listen(parentfd, 100) < 0) /* allow 5 requests to queue up */
+    if (listen(parentfd, 10000) < 0) /* allow 5 requests to queue up */
         error("ERROR on listen");
 
 

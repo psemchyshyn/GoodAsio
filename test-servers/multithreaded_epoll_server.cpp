@@ -1,5 +1,5 @@
 //
-// Created by msemc on 06.06.2021.
+// Created by msemc on 09.06.2021.
 //
 
 //
@@ -22,14 +22,14 @@
 #include "../inc/my_time.h"
 #include <vector>
 #include <algorithm>
-#include <thread>
-#include <mutex>
 #include <set>
-#include <atomic>
+#include <thread>
 
 int BUFSIZE = 10;
+int max_events = 100000;
 
-void acceptoring() {
+int acceptoring() {
+
     int parentfd; /* parent socket */
     int childfd; /* child socket */
     int portno; /* port to listen on */
@@ -39,8 +39,8 @@ void acceptoring() {
     char buf[BUFSIZE]; /* message buffer */
     int optval; /* flag value for setsockopt */
     int n; /* message byte size */
-    int cnt;
-    int loop;
+    int connectcnt; /* number of connection requests */
+    int loop = 1;
 
     portno = 1024;
     parentfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -62,70 +62,67 @@ void acceptoring() {
         throw "ERROR on listen";
 
     clientlen = sizeof(clientaddr);
+    connectcnt = 0;
 
-    std::vector<struct pollfd> tracking;
-    struct pollfd parent;
-    parent.fd = parentfd;
-    parent.events = POLLIN;
-    tracking.push_back(parent);
+
+    int epoll_fd = epoll_create1(0);
+    struct epoll_event ev, events[max_events];
+    ev.data.fd = parentfd;
+    ev.events = EPOLLIN;
+    epoll_ctl(epoll_fd, EPOLL_CTL_ADD, parentfd, &ev);
+
+    std::vector<struct epoll_event> tracking;
     auto start = get_current_time();
     while (true) {
-        if (poll(tracking.data(), tracking.size(), 0) == -1) {
+        auto ready_num = epoll_wait(epoll_fd, events, max_events, 0);
+        if (ready_num == -1) {
             throw "Error while polling";
         }
-        std::set<int> to_remove;
-        std::vector<struct pollfd> extend;
-        for (int i = 0; i < tracking.size(); i++) {
-            if (tracking.at(i).revents & POLLIN) {
-                if (tracking.at(i).fd == parentfd) {
+        for (int i = 0; i < ready_num; i++) {
+            if (events[i].events == EPOLLIN) {
+                if (events[i].data.fd  == parentfd) {
                     childfd = accept(parentfd, (struct sockaddr *) &clientaddr, &clientlen);
-//                    std::cout << "Accepted: " << childfd << '\n';
-                    struct pollfd curr;
-                    curr.fd = childfd;
-                    curr.events = POLLIN;
-                    cnt++;
-                    extend.push_back(curr);
+                    struct epoll_event ev;
+                    ev.data.fd = childfd;
+                    ev.events = EPOLLIN;
+                    epoll_ctl(epoll_fd, EPOLL_CTL_ADD, childfd, &ev);
+                    connectcnt++;
                 } else {
                     bzero(buf, BUFSIZE);
-                    n = read(tracking.at(i).fd, buf, BUFSIZE);
+                    n = read(events[i].data.fd, buf, BUFSIZE);
                     if (n < 0)
-                        throw "ERROR reading from socket";
-                    tracking.at(i).events = POLLOUT;
+                        throw "ERROR reading from socket sdf";
+                    struct epoll_event ev;
+                    ev.events = EPOLLOUT;
+                    ev.data.fd = events[i].data.fd;
+                    epoll_ctl(epoll_fd, EPOLL_CTL_MOD, events[i].data.fd, &ev);
                 }
-            } else if (tracking.at(i).revents & POLLOUT) {
-                n = write(tracking.at(i).fd, buf, strlen(buf));
+            } else if (events[i].events == EPOLLOUT) {
+                n = write(events[i].data.fd, buf, strlen(buf));
                 if (n < 0)
                     throw "ERROR writing to socket";
-                to_remove.insert(tracking.at(i).fd);
-                close(tracking.at(i).fd);
+                epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[i].data.fd, &events[i]);
+                close(events[i].data.fd);
             }
         }
-        tracking.erase(std::remove_if(tracking.begin(), tracking.end(), [&to_remove](struct pollfd e) {
-            return to_remove.find(e.fd) != to_remove.end();
-        }), tracking.end());
-        tracking.insert(tracking.end(), extend.begin(), extend.end());
-
-
         if (to_us(get_current_time() - start) > 1000000) {
 //            f.close();
 //            f = std::ofstream{"../result.txt"};
 //            f << connectcnt << std::endl;
             start = get_current_time();
 //            v_conn_per_sec.push_back(alive_connections);
-            std::cout << "[Loop " << loop << "]" "Alive connections from " << std::this_thread::get_id() << ":" << cnt << std::endl;
-            cnt = 0;
-            loop++;
+            std::cout << "[Loop " << loop++ << "]" "Alive connections from " << std::this_thread::get_id() << ":" << connectcnt << std::endl;
+            connectcnt = 0;
         }
     }
-
-
+    return 0;
 }
 
 int main(int argc, char** argv) {
     auto start = get_current_time();
     std::vector<std::thread> v;
 
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 3; i++) {
         v.push_back(std::thread (&acceptoring));
     }
 

@@ -118,7 +118,7 @@ public:
         /*
          * listen: make this socket ready to accept connection requests
          */
-        if (listen(parentfd, 5) < 0) /* allow 10000 requests to queue up */
+        if (listen(parentfd, 10000) < 0) /* allow 10000 requests to queue up */
             throw "ERROR on listen";
         return new ServerSocket(parentfd);
     }
