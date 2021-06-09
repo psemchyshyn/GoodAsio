@@ -19,5 +19,11 @@ inline long long to_us(const D& d)
     return std::chrono::duration_cast<std::chrono::microseconds>(d).count();
 }
 
+template<class D>
+inline long long to_sec(const D& d)
+{
+    return std::chrono::duration_cast<std::chrono::seconds>(d).count();
+}
+
 
 #endif //ECHO_SERVER_MY_TIME_H

@@ -78,14 +78,15 @@ int main()
     std::vector<EchoServer> servers;
     std::vector<EventLoop*> event_loops;
     std::vector<std::thread> threads;
-//    for (int i = 0; i < 1; i++) {
-    EventLoop *e = new EventLoop();
-    auto server = factory.createServer(1024);
-    EchoServer *t = new EchoServer{*e, server};
-//    threads.push_back(std::thread(&runEventLoop, e));
-    e->run();
-    event_loops.push_back(e);
-//    }
+
+    for (int i = 0; i < 2; i++) {
+
+        EventLoop *e = new EventLoop();
+        auto server = factory.createServer(1024);
+        EchoServer *t = new EchoServer{*e, server};
+        threads.push_back(std::thread(&runEventLoop, e));
+        event_loops.push_back(e);
+    }
 
 //    while (true) {
 //        if (to_us(get_current_time() - start) > 1000000) {

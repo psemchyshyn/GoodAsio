@@ -31,11 +31,6 @@ public:
         return socket_;
     }
 
-//    // Добавив цю функцію бо вона фіксить помилку з е->setReady() в EventQueue::pop
-//    void setReady() override {
-//        ready = true;
-//    }
-//
     virtual char get_type() =0;
 };
 
@@ -69,9 +64,32 @@ public:
     }
 };
 
-//template<typename Callback>
-//class AcceptEvent: public ReadEvent<Callback> {
-//public:
-//    AcceptEvent(Server)
-//};
+class TimeEvent: public Event {
+public:
+    virtual long timeLeft(){
+        return 0;
+    };
+};
+
+template<typename Callback>
+class ClockEvent: public TimeEvent{
+    std::chrono::high_resolution_clock::time_point begin;
+    int wait_for;
+    Callback cb_;
+public:
+    ClockEvent(int sec, Callback callback): wait_for{sec}, cb_{callback}, begin{get_current_time()}{};
+
+    void execute() override {
+        cb_();
+    }
+
+    bool isReady() override {
+        return to_sec(get_current_time() - begin) >= wait_for;
+    }
+
+    long timeLeft() override {
+        long time = wait_for - to_sec(get_current_time() - begin);
+        return time > 0 ? time : 0;
+    }
+};
 #endif //ECHO_SERVER_EVENT_HPP

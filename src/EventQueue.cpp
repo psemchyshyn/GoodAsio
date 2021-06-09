@@ -14,10 +14,14 @@ Event* EventQueue::pop() {
                 ready_tasks.push(ready_io.back());
                 ready_io.pop_back();
             }
+//            while (!timer_events.empty() && timer_events.top()->isReady()){
+//                ready_tasks.push(timer_events.top());
+//                timer_events.pop();
+//            }
         }
     }
 }
 
 bool EventQueue::empty() {
-    return io_events.empty() && ready_tasks.empty();
+    return io_events.empty() && ready_tasks.empty() && timer_events.empty();
 }
