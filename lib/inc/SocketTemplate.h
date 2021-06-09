@@ -13,7 +13,7 @@
 #include <arpa/inet.h>
 #include <iostream>
 #include <fstream>
-#include "my_time.h"
+#include "TimeMeasurement.h"
 #include <vector>
 #include <algorithm>
 #include <set>
@@ -24,17 +24,15 @@ class Socket {
 protected:
     int fd_;
 public:
-    explicit Socket(int fd): fd_(fd){};
-    int get_fd() const {
-        return fd_;
-    }
-    virtual ~Socket() {
-//        std::cout << "Closed: " << fd_ << '\n';
-        close(fd_);
-    }
+    explicit Socket(int fd);;
+
+    int get_fd() const;
+
+    virtual ~Socket();
 
     virtual void sread() =0;
-    virtual void swrite() =0;
+
+    virtual void swrite(){};
 };
 
 #endif //ECHO_SERVER_SOCKETTEMPLATE_H

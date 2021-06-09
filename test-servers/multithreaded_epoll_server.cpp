@@ -19,7 +19,7 @@
 #include <arpa/inet.h>
 #include <iostream>
 #include <fstream>
-#include "../inc/my_time.h"
+#include "../inc/TimeMeasurement.h"
 #include <vector>
 #include <algorithm>
 #include <set>

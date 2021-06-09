@@ -1,5 +1,5 @@
-#ifndef ECHO_SERVER_MY_TIME_H
-#define ECHO_SERVER_MY_TIME_H
+#ifndef ECHO_SERVER_TIMEMEASUREMENT_H
+#define ECHO_SERVER_TIMEMEASUREMENT_H
 
 #include <chrono>
 #include <atomic>
@@ -26,4 +26,4 @@ inline long long to_sec(const D& d)
 }
 
 
-#endif //ECHO_SERVER_MY_TIME_H
+#endif //ECHO_SERVER_TIMEMEASUREMENT_H

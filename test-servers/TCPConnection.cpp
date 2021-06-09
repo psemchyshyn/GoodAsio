@@ -1,6 +1,6 @@
 #include "TCPConnection.h"
 #include "TCPServer.h"
-#include "../inc/my_time.h"
+#include "../inc/TimeMeasurement.h"
 #include "boost/bind/bind.hpp"
 #include <iostream>
 

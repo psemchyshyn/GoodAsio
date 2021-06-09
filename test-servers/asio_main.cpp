@@ -16,7 +16,7 @@ int main()
 {
     std::vector<std::thread> threads;
     try {
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 3; i++) {
             auto io_context = new boost::asio::io_context{};
             auto server = new TCPServer(*io_context);
             threads.push_back(std::thread(&runEventLoop, io_context));

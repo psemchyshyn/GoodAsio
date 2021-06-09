@@ -1,7 +1,7 @@
 
 #include <boost/asio.hpp>
 #include <iostream>
-#include "../inc/my_time.h"
+#include "../inc/TimeMeasurement.h"
 
 int main(int argc, char* argv[]) {
     boost::system::error_code error;

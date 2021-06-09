@@ -14,7 +14,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "../inc/my_time.h"
+#include "../inc/TimeMeasurement.h"
 
 #define BUFSIZE 1024
 
