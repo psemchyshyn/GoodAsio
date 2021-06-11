@@ -105,7 +105,7 @@ std::set<std::pair<int, char>> Epoller::extract_all(int timeout) {
         } else if (events[i].events == POLLOUT) {
             result.insert(std::pair{desc, 'w'});
         }
-        epoll_ctl(epoll_instance_fd, EPOLL_CTL_DEL, events[i].data.fd, &events[i]);
+        epoll_ctl(epoll_instance_fd, EPOLL_CTL_DEL, desc, &events[i]);
     }
     return result;
 }

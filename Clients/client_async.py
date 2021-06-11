@@ -17,6 +17,7 @@ async def tcp_echo_client():
     data = await reader.read(20)
     writer.close()
     await writer.wait_closed()
+    return data
 
 async def main():
     while True:

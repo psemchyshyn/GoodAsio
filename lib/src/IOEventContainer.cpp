@@ -21,6 +21,9 @@ void IOEventContainer::update_all_p(int timeout) {
             temp.push_back(e);
         }
     }
+//    std::cout << "Container size:" << container.size() << '\n';
+//    std::cout << "Ready size:" << ready.size() << '\n';
+//    std::cout << "Diff:" << container.size() - ready.size() << '\n';
     container = temp;
 }
 

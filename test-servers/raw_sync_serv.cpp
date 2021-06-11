@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 #include <iostream>
 #include <fstream>
-#include "my_time.h"
+#include "../lib/inc/TimeMeasurement.h"
 
 
 #define BUFSIZE 1024
@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
      * and close connection.
      */
     auto start = get_current_time();
-    std::ofstream f{"../result.txt"};
+//    std::ofstream f{"../result.txt"};
     while (notdone) {
 
         /*
@@ -111,7 +111,8 @@ int main(int argc, char **argv) {
         FD_ZERO(&readfds);          /* initialize the fd set */
         FD_SET(parentfd, &readfds); /* add socket fd */
 //        FD_SET(0, &readfds);        /* add stdin fd (0) */
-        if (select(parentfd+1, &readfds, 0, 0, 0) < 0) {
+        struct timeval t{0, 1};
+        if (select(parentfd+1, &readfds, 0, 0, &t) < 0) {
             error("ERROR in select");
         }
 //        std::cout << "SELECT DONE!\n";
@@ -149,9 +150,9 @@ int main(int argc, char **argv) {
         }
 
         if (to_us(get_current_time() - start) > 1000000) {
-            f.close();
-            f = std::ofstream {"../result.txt"};
-            f << connectcnt << std::endl;
+//            f.close();
+//            f = std::ofstream {"../result.txt"};
+//            f << connectcnt << std::endl;
             start = get_current_time();
 //            v_conn_per_sec.push_back(alive_connections);
             std::cout << connectcnt << std::endl;

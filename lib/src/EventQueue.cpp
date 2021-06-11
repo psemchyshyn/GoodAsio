@@ -28,5 +28,5 @@ bool EventQueue::empty() {
 }
 
 bool Compare::operator()(TimeEvent *left, TimeEvent *right) {
-    return (left->timeLeft()) < (right->timeLeft());
+    return (left->timeLeft()) >= (right->timeLeft());
 }

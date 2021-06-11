@@ -33,6 +33,7 @@ public:
 class TimeEvent: public Event {
 public:
     virtual long timeLeft();
+    virtual ~TimeEvent() =default;
 };
 
 template<typename Callback>
@@ -49,6 +50,8 @@ public:
     char get_type() {
         return 'r';
     }
+
+    ~ReadEvent() =default;
 };
 
 template<typename Callback>
@@ -65,6 +68,8 @@ public:
     char get_type() {
         return 'w';
     }
+
+    ~WriteEvent() =default;
 };
 
 template<typename Callback>
@@ -87,5 +92,7 @@ public:
         long time = wait_for - to_sec(get_current_time() - begin);
         return time > 0 ? time : 0;
     }
+
+    ~ClockEvent() =default;
 };
 #endif //ECHO_SERVER_EVENT_H

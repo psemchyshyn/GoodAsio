@@ -72,7 +72,7 @@ public:
 };
 
 class Epoller: public IOManager {
-    static const int EVENTS_SIZE = 10000;
+    static const int EVENTS_SIZE = 100000;
     struct epoll_event events[EVENTS_SIZE];
     int epoll_instance_fd;
 public:

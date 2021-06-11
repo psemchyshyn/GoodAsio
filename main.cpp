@@ -47,8 +47,8 @@ public:
 //        std::cout << "In accept\n";
         connections_alive++;
         auto session = acceptor->getCurrentSession();
-        session->async_read(context, std::bind(&EchoServer::handle_read, this, session));
         start_accept();
+        session->async_read(context, std::bind(&EchoServer::handle_read, this, session));
         if (to_us(get_current_time() - start) > 1000000) {
             start = get_current_time();
 //            v_conn_per_sec.push_back(server.connections_alive);
